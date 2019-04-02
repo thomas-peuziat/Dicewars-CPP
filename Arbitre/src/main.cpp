@@ -59,8 +59,26 @@ int main(int argc, char *argv[])
 
 	for (unsigned int i = 0; i < NbMembers; ++i)
 		std::cout << "Nom du membre #" << (i + 1) << " : '" << player.members[i] << "'" << std::endl;
+	int res = 0;
+	int gameTurn = 0;
+	do {
+		res = PlayTurn(gameTurn, ctx, &state, &turn);
+		if (res != 0) 
+		{
+			int gameTurn = ValidAttack(ctx, &turn);
+		}
+		
+	} while (res != 0 && gameTurn == 0);
 
-	PlayTurn(0, ctx, &state, &turn);
+
+	if (gameTurn == 1)							// Si le tour du joueur a échoué, on retablit les paramètres
+	{
+		RetablirEtat(ctx, &state);
+	}
+	else										// Sinon on valide les paramètres
+	{
+		ValiderEtat(ctx, &state);
+	}
 
 	EndGame(ctx, 1);
 
