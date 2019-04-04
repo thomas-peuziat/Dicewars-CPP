@@ -42,7 +42,7 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 
 	SCell *territories = static_cast<SContext*>(ctx)->map->cells;
 
-	srand(time(NULL));
+	srand(time(NULL)); //a n'appeler qu'une seule fois ??!! dans le main normalement
 
 
 	
@@ -58,10 +58,10 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 		int ret = rand() % 2;					// Tirage aléatoire pour déterminer si le joueur va faire un coup
 		if (ret == 1)
 		{
-			// Parcours de toute les celulles de la map
+			// Parcours de toutes les celulles de la map
 			for (int i = 0; i < state->nbCells; i++)
 			{
-				// On ne garde que celle dont on est le propriétaire
+				// On ne garde que celles dont on est le propriétaire
 				if (state->cells[i].owner == static_cast<SContext*>(ctx)->id && state->cells[i].nbDices > 1)
 				{
 					tab_own[idx_own] = i;
@@ -70,7 +70,7 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 			}
 
 
-			if (idx_own > 0)								// Si au moins 1 des celulle est jouable
+			if (idx_own > 0)								// Si au moins 1 des celulles est jouable
 			{
 				int nbVoisins = territories[cellFrom].nbNeighbors;
 
