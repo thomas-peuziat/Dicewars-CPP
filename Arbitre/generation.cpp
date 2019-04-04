@@ -1,5 +1,10 @@
 #include "../Commun/interface.h"
 
+#include <iostream>
+#include <vector>
+
+const int NB_CELL = 30;
+
 
 SCell* generateCell(int nbCellToGenerate)
 {
@@ -8,10 +13,10 @@ SCell* generateCell(int nbCellToGenerate)
 	infos.owner = 1;
 	infos.nbDices = 2;
 
-	SCell *maCell;
+	SCell *maCell = {};
 	maCell->infos = infos;
 
-
+	return nullptr;
 }
 /* Création d'une map */
 int CreateMap() {

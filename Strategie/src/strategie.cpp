@@ -26,7 +26,7 @@ API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *ma
 	strcpy(info->members[1], "DANIEL Florian");
 	strcpy(info->members[2], "GAUDUCHEAU Clément");
 	strcpy(info->members[3], "PEUZIAT Thomas");
-	
+
 	ctx->id = id;
 	ctx->nbPlayers = nbPlayer;
 	ctx->infos = info;
@@ -45,7 +45,7 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 	srand(time(NULL)); //a n'appeler qu'une seule fois ??!! dans le main normalement
 
 
-	
+
 	if (gameTurn == 0)							// Le coup précédent est correct				
 	{
 		int cellFrom = -1;
