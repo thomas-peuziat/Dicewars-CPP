@@ -9,6 +9,31 @@
 		return(-1);\
 	}
 
+bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID) {
+	const SCell& cellFrom = map->cells[turn->cellFrom];
+	const SCellInfo& cellInfoFrom = state->cells[cellFrom.infos.id];
+	const SCell& cellTo = map->cells[turn->cellTo];
+	const SCellInfo& cellInfoTo = state->cells[cellTo.infos.id];
+
+	if (cellInfoTo.owner == playerID ||		// Si on s'attaque soi-même
+		cellInfoFrom.owner != playerID ||	// Si on ne possède pas la cellule
+		cellInfoFrom.nbDices <= 1)			// Si on ne possède pas assez de dés
+		return false;
+	
+	bool isNeighbor = false;
+	for (int i = 0; i < cellFrom.nbNeighbors; i++) {
+		if (cellFrom.neighbors[i]->infos.id == cellTo.infos.id) {
+			isNeighbor = true;
+			break;
+		}
+	}
+
+	if (!isNeighbor)
+		return false;		// La cellule n'est pas voisine
+
+	return true;	// Le coup est valide
+}
+
 int main(int argc, char *argv[])
 {
 	if (argc < 2)
@@ -49,23 +74,25 @@ int main(int argc, char *argv[])
 	SGameState state;
 	SPlayerInfo player;
 	STurn turn;
-	void *ctx;
+	void *ctx[NbMembers];
 
-	for (unsigned int i = 0; i < NbMembers; ++i)
+	for (unsigned int i = 0; i < NbMembers; ++i) {
 		player.members[i][0] = '\0';
-	ctx = InitGame(1, 3, &map, &player);
-	std::cout << "Nom de la stratégie : '" << player.name << "'" << std::endl;
-
+		ctx[i] = InitGame(i, 3, &map, &player);
+		std::cout << "Nom de la stratégie : '" << player.name << "'" << std::endl;
+	}
 
 	for (unsigned int i = 0; i < NbMembers; ++i)
 		std::cout << "Nom du membre #" << (i + 1) << " : '" << player.members[i] << "'" << std::endl;
 	int res = 0;
 	int gameTurn = 0;
+
+	// TODO : Penser au fait qu'on utilise un tableau de ctx, un par joueur
 	do {
 		res = PlayTurn(gameTurn, ctx, &state, &turn);
 		if (res != 0) 
 		{
-			int gameTurn = ValidAttack(ctx, &turn);
+			int gameTurn = ValidAttack(&turn, &map, &state, /*playerID*/);
 		}
 		
 	} while (res != 0 && gameTurn == 0);
