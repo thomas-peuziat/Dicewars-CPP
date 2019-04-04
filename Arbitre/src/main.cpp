@@ -100,11 +100,11 @@ int main(int argc, char *argv[])
 
 	if (gameTurn == 1)							// Si le tour du joueur a échoué, on retablit les paramètres
 	{
-		RetablirEtat(ctx, &state);
+		RetablirEtat(&map, &state);
 	}
 	else										// Sinon on valide les paramètres
 	{
-		ValiderEtat(ctx, &state);
+		ValiderEtat(&map, &state);
 	}
 
 	EndGame(ctx, 1);
@@ -113,3 +113,16 @@ int main(int argc, char *argv[])
 
 	return(0);
 }
+
+void RetablirEtat(const SMap *map, SGameState *state)
+{
+	for (int i = 0; i < map->nbCells; i++)
+		state->cells[i] = map->cells[i].infos;
+}
+
+void ValiderEtat(SMap *map, const SGameState*state)
+{
+	for (int i = 0; i < map->nbCells; i++)
+		map->cells[i].infos = state->cells[i];
+}
+

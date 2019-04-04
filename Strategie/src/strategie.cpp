@@ -41,7 +41,6 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 
 
 	SCell *territories = static_cast<SContext*>(ctx)->map->cells;
-	SCell *territoriess = static_cast<SContext*>(ctx)->map->cells;
 
 	srand(time(NULL));
 
