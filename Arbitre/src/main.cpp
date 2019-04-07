@@ -16,6 +16,8 @@ void InitMap(SMap *map);
 void RetablirEtat(const SMap *map, SGameState *state);
 void ValiderEtat(SMap *map, const SGameState*state);
 bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID);
+void InitGameState(const SMap *map, SGameState *state);
+void UpdateGameState(const STurn *turn, SGameState *state);
 
 
 int main(int argc, char *argv[])
@@ -54,13 +56,14 @@ int main(int argc, char *argv[])
 	GETFUNCTION(hLib, PlayTurn);
 	GETFUNCTION(hLib, EndGame);
 
-	SMap map;
-	SGameState state;
-	SPlayerInfo player;
-	STurn turn;
+	SMap map = {};
+	SGameState state = {};
+	SPlayerInfo player = {};
+	STurn turn = {};
 	void *ctx[1];
 
 	InitMap(&map);
+	InitGameState(&map, &state);
 
 	for (unsigned int i = 0; i < NbMembers; ++i) {
 		player.members[i][0] = '\0';
@@ -69,20 +72,26 @@ int main(int argc, char *argv[])
 
 	ctx[0] = InitGame(0, 3, &map, &player);
 
+
 	for (unsigned int i = 0; i < NbMembers; ++i)
 		std::cout << "Nom du membre #" << (i + 1) << " : '" << player.members[i] << "'" << std::endl;
-	int res = 0;
+	int fin = 0;
 	int gameTurn = 0;
 
 	// TODO : Penser au fait qu'on utilise un tableau de ctx, un par joueur
 	do {
-		res = PlayTurn(gameTurn, ctx[0], &state, &turn);
-		if (res != 0)
-		{
+		fin = PlayTurn(gameTurn, ctx[0], &state, &turn);
+		if (fin != 0) {
 			int gameTurn = ValidAttack(&turn, &map, &state, 0);
-		}
 
-	} while (res != 0 && gameTurn == 0);
+			if (gameTurn == 0)
+				UpdateGameState(&turn, &state);
+			else
+				break;
+		}
+			
+
+	} while (fin != 0);
 
 
 	if (gameTurn == 1)							// Si le tour du joueur a échoué, on retablit les paramètres
@@ -122,7 +131,7 @@ void InitMap(SMap *map)
 	{
 		SCell c;
 		c.infos.id = i;
-		c.infos.owner = rand() % 5 + 1;
+		c.infos.owner = rand() % 5;
 		c.infos.nbDices = rand() % 6 + 1;
 		cell[i] = c;
 
@@ -248,7 +257,7 @@ bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, in
 	if (cellInfoTo.owner == playerID ||		// Si on s'attaque soi-même
 		cellInfoFrom.owner != playerID ||	// Si on ne possède pas la cellule
 		cellInfoFrom.nbDices <= 1)			// Si on ne possède pas assez de dés
-		return false;
+		return true;
 
 	bool isNeighbor = false;
 	for (int i = 0; i < cellFrom.nbNeighbors; i++) {
@@ -259,8 +268,44 @@ bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, in
 	}
 
 	if (!isNeighbor)
-		return false;		// La cellule n'est pas voisine
+		return true;		// La cellule n'est pas voisine
 
-	return true;	// Le coup est valide
+	return false;	// Le coup est valide
+}
+
+void InitGameState(const SMap *map, SGameState *state)
+{
+	state->cells = (SCellInfo*)malloc(sizeof(SCellInfo)*NB_CELL);
+	for (int i = 0; i < map->nbCells; i++)
+		state->cells[i] = map->cells[i].infos;
+
+	state->nbCells = NB_CELL;
+}
+
+void UpdateGameState(const STurn *turn, SGameState *state)
+{
+	int NbDicesFrom = state->cells[turn->cellFrom].nbDices;
+	int NbDicesTo = state->cells[turn->cellTo].nbDices;
+
+	int TotalFrom = 0;
+	int TotalTo = 0;
+
+	for (int i = 0; i < NbDicesFrom; i++)
+		TotalFrom += (rand() % 5) + 1;
+
+	for (int i = 0; i < NbDicesTo; i++)
+		TotalTo += (rand() % 5) + 1;
+
+	if (TotalFrom > TotalTo)				// si l'attaquant a gagné
+	{
+		state->cells[turn->cellTo].owner = state->cells[turn->cellFrom].owner;
+		state->cells[turn->cellTo].nbDices = state->cells[turn->cellFrom].nbDices - 1;
+		state->cells[turn->cellFrom].nbDices = 1;
+
+	}
+	else									// si l'attaquant a perdu 
+	{
+		state->cells[turn->cellFrom].nbDices = 1;
+	}
 }
 

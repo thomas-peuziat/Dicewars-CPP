@@ -65,16 +65,16 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 				if (state->cells[i].owner == static_cast<SContext*>(ctx)->id && state->cells[i].nbDices > 1)
 				{
 					tab_own[idx_own] = i;
-					i++;
+					idx_own += 1;
 				}
 			}
 
 
 			if (idx_own > 0)								// Si au moins 1 des celulles est jouable
 			{
-				int nbVoisins = territories[cellFrom].nbNeighbors;
-
 				int cellFrom = tab_own[rand() % idx_own];
+
+				int nbVoisins = territories[cellFrom].nbNeighbors;
 				int cellTo = territories[cellFrom].neighbors[rand() % nbVoisins]->infos.id;
 
 				turn->cellFrom = cellFrom;
