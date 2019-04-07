@@ -5,7 +5,7 @@ IDEES:
 - attaque depuis un territoire (le plus grand nombre de dés qu'on possède sur un territoire) dès qu'un adversaire est à côté et possède un nombre de dés inférieurs
 
 
-- rejoindre des territoires séparés en attaquand les plus faibles (calculs du plus courts chemins - dijkstra)
+- rejoindre des territoires séparés en attaquant les plus faibles (calculs du plus courts chemins - dijkstra)
 nb dés distribués = nb territoires sur notre plus grande zone connexe
 ATK = 
 1er critère - dés attaquant avec la plus grosse différences de dés par rapport au défenseur
