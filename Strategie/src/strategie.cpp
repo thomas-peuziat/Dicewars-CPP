@@ -37,26 +37,24 @@ API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *ma
 
 API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *state, STurn *turn)
 {
-	std::cout << "PlayTurn" << std::endl;
+	std::cout << "PlayTurn" << static_cast<SContext*>(ctx)->id << std::endl;
 
 
 	SCell *territories = static_cast<SContext*>(ctx)->map->cells;
 
-	srand(time(NULL)); //a n'appeler qu'une seule fois ??!! dans le main normalement
-
+	std::cout << static_cast<SContext*>(ctx)->id << std::endl;
 
 
 	if (gameTurn == 0)							// Le coup précédent est correct				
 	{
 		int cellFrom = -1;
 		int cellTo = -1;
-		int *tab_own = new int();
-		int *tab_adj = new int();
+		int *tab_own = (int*)malloc(sizeof(int)*6);
 		int idx_own = 0;
 		int idx_adj = 0;
 
-		int ret = rand() % 2;					// Tirage aléatoire pour déterminer si le joueur va faire un coup
-		if (ret == 1)
+		int ret = 1;					// Tirage aléatoire pour déterminer si le joueur va faire un coup
+		if (ret != 0)
 		{
 			// Parcours de toutes les celulles de la map
 			for (int i = 0; i < state->nbCells; i++)

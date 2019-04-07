@@ -2,6 +2,7 @@
 #include "../../Commun/interface.h"
 #include "../../Commun/library.h"
 #include <vector>
+#include<time.h>
 
 #define GETFUNCTION(handler,name) \
 	if ((name = (p##name)GETPROC(hLib, #name)) == nullptr)\
@@ -18,10 +19,13 @@ void ValiderEtat(SMap *map, const SGameState*state);
 bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID);
 void InitGameState(const SMap *map, SGameState *state);
 void UpdateGameState(const STurn *turn, SGameState *state);
+int getNbTerritories(int IDPlayer, SGameState *state);
 
 
 int main(int argc, char *argv[])
 {
+	srand(time(NULL));
+	const int nbPlayers = 5;
 	if (argc < 2)
 	{
 		std::cerr << "Usage: " << argv[0] << " libfile" << std::endl;
@@ -30,16 +34,37 @@ int main(int argc, char *argv[])
 
 	std::cout << "Argument de la commande : '" << argv[1] << "'" << std::endl;
 
-	HLIB hLib;
-	if ((hLib = LOADLIB(argv[1])) == nullptr)
-	{
-		std::cerr << "Impossible de charger la librairie '" << argv[1] << "'" << std::endl;
-		return(-1);
-	}
-
 	pInitGame InitGame;
 	pPlayTurn PlayTurn;
 	pEndGame EndGame;
+
+	pInitGame* tab_InitGame = (pInitGame*)malloc(sizeof(pInitGame)*NB_CELL);
+	pPlayTurn* tab_PlayTurn = (pPlayTurn*)malloc(sizeof(pPlayTurn)*NB_CELL);
+	pEndGame* tab_EndGame = (pEndGame*)malloc(sizeof(pEndGame)*NB_CELL);
+
+	HLIB hLib;
+	for (int i = 0; i < nbPlayers; i++)
+	{
+		if ((hLib = LOADLIB(argv[1])) == nullptr)
+		{
+			std::cerr << "Impossible de charger la librairie '" << argv[1] << "'" << std::endl;
+			return(-1);
+		}
+
+		else {
+
+			GETFUNCTION(hLib, InitGame);
+			tab_InitGame[i] = InitGame;
+
+			GETFUNCTION(hLib, PlayTurn);
+			tab_PlayTurn[i] = PlayTurn;
+
+			GETFUNCTION(hLib, EndGame);
+			tab_EndGame[i] = EndGame;
+		}
+	}
+
+
 
 	/*
 	Utilisation de la macro GETFUNCTION pour éviter de réécrire le même genre de code (attention à adapter dans votre projet en fonction de votre contexte !)
@@ -52,15 +77,13 @@ int main(int argc, char *argv[])
 	}
 
 	*/
-	GETFUNCTION(hLib, InitGame);
-	GETFUNCTION(hLib, PlayTurn);
-	GETFUNCTION(hLib, EndGame);
 
-	SMap map = {};
-	SGameState state = {};
-	SPlayerInfo player = {};
-	STurn turn = {};
-	void *ctx[1];
+
+	SMap map;
+	SGameState state;
+	SPlayerInfo player;
+	STurn turn;
+	void *ctx[nbPlayers];
 
 	InitMap(&map);
 	InitGameState(&map, &state);
@@ -69,41 +92,66 @@ int main(int argc, char *argv[])
 		player.members[i][0] = '\0';
 	}
 	std::cout << "Nom de la stratégie : '" << player.name << "'" << std::endl;
-
-	ctx[0] = InitGame(0, 3, &map, &player);
-
+	for(int i= 0; i < nbPlayers; i++)
+		ctx[i] = tab_InitGame[i](i, nbPlayers, &map, &player);
 
 	for (unsigned int i = 0; i < NbMembers; ++i)
 		std::cout << "Nom du membre #" << (i + 1) << " : '" << player.members[i] << "'" << std::endl;
+
+	// Interblocage lorsque tout le monde ne possède plus qu'un dé sur son territoire
 	int fin = 0;
 	int gameTurn = 0;
-
-	// TODO : Penser au fait qu'on utilise un tableau de ctx, un par joueur
 	do {
-		fin = PlayTurn(gameTurn, ctx[0], &state, &turn);
-		if (fin != 0) {
-			int gameTurn = ValidAttack(&turn, &map, &state, 0);
+		for (int i = 0; i < nbPlayers; i++) {
+			fin = 0;
+			gameTurn = 0;
+			do {
+				fin = PlayTurn(gameTurn, ctx[i], &state, &turn);
+				if (fin != 0) {
+					int gameTurn = ValidAttack(&turn, &map, &state, i);
 
-			if (gameTurn == 0)
-				UpdateGameState(&turn, &state);
-			else
+					if (gameTurn == 0)
+					{
+						UpdateGameState(&turn, &state);
+						if (getNbTerritories(i, &state) == NB_CELL)
+						{
+							fin = 2;
+						}
+					}		
+					else {
+						break;
+					}
+						
+				}
+
+
+			} while (fin == 1);
+
+			if (gameTurn == 1)							// Si le tour du joueur a échoué, on retablit les paramètres
+			{
+				RetablirEtat(&map, &state);
+			}
+			else										// Sinon on valide les paramètres
+			{
+				ValiderEtat(&map, &state);
+			}
+
+			if (fin == 2)
 				break;
+
+			if (i == nbPlayers - 1)
+				i = -1;
 		}
-			
-
-	} while (fin != 0);
-
-
-	if (gameTurn == 1)							// Si le tour du joueur a échoué, on retablit les paramètres
-	{
-		RetablirEtat(&map, &state);
-	}
-	else										// Sinon on valide les paramètres
-	{
-		ValiderEtat(&map, &state);
-	}
+		
+	} while (fin != 2);
+	// TODO : Penser au fait qu'on utilise un tableau de ctx, un par joueur
+	
 
 	EndGame(ctx[0], 1);
+
+	free(tab_PlayTurn);
+	free(tab_InitGame);
+	free(tab_EndGame);
 
 	CLOSELIB(hLib);
 
@@ -307,5 +355,15 @@ void UpdateGameState(const STurn *turn, SGameState *state)
 	{
 		state->cells[turn->cellFrom].nbDices = 1;
 	}
+}
+
+int getNbTerritories(int IDPlayer, SGameState *state) {
+	int nbTerr = 0;
+	for (int i = 0; i < state->nbCells; i++) 
+	{
+		if (state->cells[i].owner == IDPlayer)
+			nbTerr++;
+	}
+	return nbTerr;
 }
 
