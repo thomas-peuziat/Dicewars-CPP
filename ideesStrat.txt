@@ -1,0 +1,12 @@
+IDEES:
+- attaquer depuis ceux qui ont le plus de dés (les 3 territoires avec le plus de dés + attaque sur un voisin random ou sur le voisin qui possède le moins de dés)
+
+
+- attaque depuis un territoire (le plus grand nombre de dés qu'on possède sur un territoire) dès qu'un adversaire est à côté et possède un nombre de dés inférieurs
+
+
+- rejoindre des territoires séparés en attaquand les plus faibles (calculs du plus courts chemins - dijkstra)
+nb dés distribués = nb territoires sur notre plus grande zone connexe
+ATK = 
+1er critère - dés attaquant avec la plus grosse différences de dés par rapport au défenseur
+2èm critère - depuis le territoire avec le plus petit nombre de dés (cf stats de valentin)
