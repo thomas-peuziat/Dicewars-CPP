@@ -1,5 +1,7 @@
 #pragma once
-// v 1.0
+// v 1.3
+
+#include <cstddef>
 
 // Structure définissant l'identification de la stratégie
 const unsigned int NbMembers = 5;
@@ -19,15 +21,16 @@ typedef struct
 
 typedef struct
 {
-	SCellInfo *cells;
-	unsigned int nbCells;
+	SCellInfo *cells;	// Informations sur le contenu des cellules
+	std::size_t nbCells;
+	unsigned int points[8];	// Points de chaque joueur
+	unsigned int diceStock[8];	// Réserve de dés de chaque joueur
 } SGameState;
 
 // Structure définissant les caractéristiques d'une cellule
 typedef struct SCell
 {
 	SCellInfo infos;	// Informations sur la cellule
-
 	struct SCell **neighbors;	// Tableau de poiteur vers des cellules voisines
 	int nbNeighbors;	// Nombre de cellules voisines
 } SCell;
