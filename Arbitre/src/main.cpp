@@ -28,7 +28,7 @@ bool isWin(int idPlayer, SGameState *state);
 int main(int argc, char *argv[])
 {
 	srand(time(NULL));
-	const int nbPlayers = 5;
+	const int nbPlayers = 2;
 	if (argc < 2)
 	{
 		std::cerr << "Usage: " << argv[0] << " libfile" << std::endl;
@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
 	}
 
 	std::cout << "Argument de la commande : '" << argv[1] << "'" << std::endl;
+	std::cout << "Argument de la commande : '" << argv[2] << "'" << std::endl;
 
 	pInitGame InitGame;
 	pPlayTurn PlayTurn;
@@ -48,9 +49,9 @@ int main(int argc, char *argv[])
 	HLIB hLib;
 	for (int i = 0; i < nbPlayers; i++)
 	{
-		if ((hLib = LOADLIB(argv[1])) == nullptr)
+		if ((hLib = LOADLIB(argv[i+1])) == nullptr)
 		{
-			std::cerr << "Impossible de charger la librairie '" << argv[1] << "'" << std::endl;
+			std::cerr << "Impossible de charger la librairie '" << argv[i + 1] << "'" << std::endl;
 			return(-1);
 		}
 
@@ -84,7 +85,7 @@ int main(int argc, char *argv[])
 
 	SMap map;
 	SGameState state;
-	SPlayerInfo player;
+	SPlayerInfo player[nbPlayers];
 	STurn turn;
 	void *ctx[nbPlayers];
 	//--void *ctxGUI;
@@ -106,25 +107,25 @@ int main(int argc, char *argv[])
 	InitGameState(&map, &state);
 
 	//--SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
-
-	player.name[0] = '\0';
-
-	for (unsigned int i = 0; i < NbMembers; ++i) {
-		player.members[i][0] = '\0';
-	}
-	
-	for (int i = 0; i < nbPlayers; i++)
+	for (unsigned int idxStrat = 0; idxStrat < nbPlayers; idxStrat++)
 	{
-		ctx[i] = tab_InitGame[i](i, nbPlayers, &map, &player);
-		//--SetPlayerInfo(ctxGUI, 1, &player);		// A placer à chaque chargement de librairie de joueur.
+		player[idxStrat].name[0] = '\0';
+
+		for (unsigned int i = 0; i < NbMembers; ++i) {
+			player[idxStrat].members[i][0] = '\0';
+		}
+
+		ctx[idxStrat] = tab_InitGame[idxStrat](idxStrat, nbPlayers, &map, &player[idxStrat]);
+		//--SetPlayerInfo(ctxGUI, 1, &player[idxStrat]);		// A placer à chaque chargement de librairie de joueur.
+
+		std::cout << "Nom de la stratégie : '" << player[idxStrat].name << "'" << std::endl;
+
+
+
+		for (unsigned int i = 0; i < NbMembers; ++i)
+			std::cout << "Nom du membre #" << (i + 1) << " : '" << player[idxStrat].members[i] << "'" << std::endl;
 	}
 	
-	std::cout << "Nom de la stratégie : '" << player.name << "'" << std::endl;
-	
-		
-
-	for (unsigned int i = 0; i < NbMembers; ++i)
-		std::cout << "Nom du membre #" << (i + 1) << " : '" << player.members[i] << "'" << std::endl;
 
 
 	// Interblocage lorsque tout le monde ne possède plus qu'un dé sur son territoire
