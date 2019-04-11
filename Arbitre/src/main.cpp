@@ -107,15 +107,20 @@ int main(int argc, char *argv[])
 
 	//--SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
 
+	player.name[0] = '\0';
+
 	for (unsigned int i = 0; i < NbMembers; ++i) {
 		player.members[i][0] = '\0';
 	}
-	std::cout << "Nom de la stratégie : '" << player.name << "'" << std::endl;
-	for(int i= 0; i < nbPlayers; i++)
+	
+	for (int i = 0; i < nbPlayers; i++)
 	{
 		ctx[i] = tab_InitGame[i](i, nbPlayers, &map, &player);
 		//--SetPlayerInfo(ctxGUI, 1, &player);		// A placer à chaque chargement de librairie de joueur.
 	}
+	
+	std::cout << "Nom de la stratégie : '" << player.name << "'" << std::endl;
+	
 		
 
 	for (unsigned int i = 0; i < NbMembers; ++i)
@@ -146,7 +151,7 @@ int main(int argc, char *argv[])
 						break;
 					}		
 				}
-				win = isWin(i, &state);
+				//win = isWin(i, &state);
 			} while (fin == 1);
 
 			if (!gameTurn)																	// Si le tour du joueur a échoué, on retablit les paramètres
