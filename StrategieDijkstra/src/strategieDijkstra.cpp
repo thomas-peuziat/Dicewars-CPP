@@ -14,6 +14,7 @@ struct SContext
 	int nbPlayers;
 	SPlayerInfo* infos;
 	const SMap* map;
+	unsigned int gameTurn;//vérifier si toujours égal au coup précédent
 };
 
 API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *map, SPlayerInfo *info)
@@ -21,7 +22,7 @@ API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *ma
 	std::cout << "InitGame" << std::endl;
 	SContext *ctx = new SContext();
 
-	strcpy(info->name, "Stratégie Dikkstra");
+	strcpy(info->name, "Stratégie Dijkstra");
 	strcpy(info->members[0], "COUTY Killian");
 	strcpy(info->members[1], "DANIEL Florian");
 	strcpy(info->members[2], "GAUDUCHEAU Clément");
@@ -41,7 +42,7 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 {
 	std::cout << "PlayTurn" << std::endl;
 
-	Scell *territories = static_cast<SContext*>(ctx)->map->cells;
+	SCell *territories = static_cast<SContext*>(ctx)->map->cells;
 
 
 	//si le coup précédent est valide
