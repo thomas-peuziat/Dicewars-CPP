@@ -20,6 +20,7 @@ bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, in
 void InitGameState(const SMap *map, SGameState *state);
 void UpdateGameState(const STurn *turn, SGameState *state);
 int getNbTerritories(int IDPlayer, SGameState *state);
+//void PlayGame(const int nbPlayers, void* ctx[], const SGameState *state, const SMap *map, pInitGame* tab_InitGame, pPlayTurn* tab_PlayTurn , pEndGame* tab_InitGame);
 
 
 int main(int argc, char *argv[])
@@ -92,58 +93,50 @@ int main(int argc, char *argv[])
 		player.members[i][0] = '\0';
 	}
 	std::cout << "Nom de la stratégie : '" << player.name << "'" << std::endl;
+
+	// Initialisation des players
 	for(int i= 0; i < nbPlayers; i++)
 		ctx[i] = tab_InitGame[i](i, nbPlayers, &map, &player);
 
 	for (unsigned int i = 0; i < NbMembers; ++i)
 		std::cout << "Nom du membre #" << (i + 1) << " : '" << player.members[i] << "'" << std::endl;
 
+
 	// Interblocage lorsque tout le monde ne possède plus qu'un dé sur son territoire
 	int fin = 0;
-	int gameTurn = 0;
+	int gameTurn = 1;
+	bool win = false;
+
 	do {
+		// Pour chaque joueurs
 		for (int i = 0; i < nbPlayers; i++) {
 			fin = 0;
-			gameTurn = 0;
-			do {
-				fin = PlayTurn(gameTurn, ctx[i], &state, &turn);
-				if (fin != 0) {
-					int gameTurn = ValidAttack(&turn, &map, &state, i);
+			gameTurn = 1;
 
-					if (gameTurn == 0)
+			// Tant que le joueur fait un coup valide ou que le joueur a fini son tour
+			do {
+				fin = tab_PlayTurn[i](gameTurn, ctx[i], &state, &turn);
+				if (!fin) {
+					if (ValidAttack(&turn, &map, &state, i))								// Attaque valide
 					{
 						UpdateGameState(&turn, &state);
-						if (getNbTerritories(i, &state) == NB_CELL)
-						{
-							fin = 2;
-						}
-					}		
-					else {
+					}
+					else {																	// Attaque invalide
 						break;
 					}
-						
 				}
+				win = isWin(i, &state);
+			} while (fin || !win);
 
-
-			} while (fin == 1);
-
-			if (gameTurn == 1)							// Si le tour du joueur a échoué, on retablit les paramètres
-			{
+			if (!gameTurn)																	// Si le tour du joueur a échoué, on retablit les paramètres
 				RetablirEtat(&map, &state);
-			}
-			else										// Sinon on valide les paramètres
-			{
+			else																			// Sinon on valide les paramètres
 				ValiderEtat(&map, &state);
-			}
 
-			if (fin == 2)
+			if (win)
 				break;
-
-			if (i == nbPlayers - 1)
-				i = -1;
 		}
-		
-	} while (fin != 2);
+	} while (!win);
 	// TODO : Penser au fait qu'on utilise un tableau de ctx, un par joueur
 	
 
@@ -305,7 +298,7 @@ bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, in
 	if (cellInfoTo.owner == playerID ||		// Si on s'attaque soi-même
 		cellInfoFrom.owner != playerID ||	// Si on ne possède pas la cellule
 		cellInfoFrom.nbDices <= 1)			// Si on ne possède pas assez de dés
-		return true;
+		return false;
 
 	bool isNeighbor = false;
 	for (int i = 0; i < cellFrom.nbNeighbors; i++) {
@@ -316,9 +309,9 @@ bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, in
 	}
 
 	if (!isNeighbor)
-		return true;		// La cellule n'est pas voisine
+		return false;		// La cellule n'est pas voisine
 
-	return false;	// Le coup est valide
+	return true;	// Le coup est valide
 }
 
 void InitGameState(const SMap *map, SGameState *state)
@@ -366,4 +359,3 @@ int getNbTerritories(int IDPlayer, SGameState *state) {
 	}
 	return nbTerr;
 }
-
