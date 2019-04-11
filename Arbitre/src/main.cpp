@@ -3,6 +3,8 @@
 #include "../../Commun/library.h"
 #include <vector>
 #include<time.h>
+#include "MapLoader.h"
+#include "../../Commun/interface_gui.h"
 
 #define GETFUNCTION(handler,name) \
 	if ((name = (p##name)GETPROC(hLib, #name)) == nullptr)\
@@ -18,7 +20,7 @@ void RetablirEtat(const SMap *map, SGameState *state);
 void ValiderEtat(SMap *map, const SGameState*state);
 bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID);
 void InitGameState(const SMap *map, SGameState *state);
-void UpdateGameState(const STurn *turn, SGameState *state);
+void Confrontation(const STurn *turn, SGameState *state, /*--SGameTurn *sGameTurn, --*/int idPlayer);
 int getNbTerritories(int IDPlayer, SGameState *state);
 
 
@@ -84,16 +86,35 @@ int main(int argc, char *argv[])
 	SPlayerInfo player;
 	STurn turn;
 	void *ctx[nbPlayers];
+	//--void *ctxGUI;
+	//--SGameTurn sGameTurn;
+	//--unsigned int idTurn = 0;
+
+	//--for (unsigned int i = 0; i < 8; ++i)
+	//--	for (unsigned int j = 0; j < 2; ++j)
+	//--		sGameTurn.dices[j][i] = 0;
+
+	//--Regions regions;							// vector de vector de pair, donc la grille, à relier à la génération de SMap
+	//--LoadDefaultMap(regions);
+
+	//--SRegions *mapCells = ConvertMap(regions);	// Convert des std::vector< std::vector<std::pair<unsigned int, unsigned int>> > en SRegions*
+	//--ctxGUI = InitGUI(nbPlayers, mapCells);		
+	//--DeleteMap(mapCells);						// Après InitGUI
 
 	InitMap(&map);
 	InitGameState(&map, &state);
+
+	//--SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
 
 	for (unsigned int i = 0; i < NbMembers; ++i) {
 		player.members[i][0] = '\0';
 	}
 	std::cout << "Nom de la stratégie : '" << player.name << "'" << std::endl;
-	for(int i= 0; i < nbPlayers; i++)
+	for (int i = 0; i < nbPlayers; i++) {
 		ctx[i] = tab_InitGame[i](i, nbPlayers, &map, &player);
+		//--SetPlayerInfo(ctxGUI, 1, &player);		// A placer à chaque chargement de librairie de joueur.
+	}
+		
 
 	for (unsigned int i = 0; i < NbMembers; ++i)
 		std::cout << "Nom du membre #" << (i + 1) << " : '" << player.members[i] << "'" << std::endl;
@@ -101,6 +122,9 @@ int main(int argc, char *argv[])
 	// Interblocage lorsque tout le monde ne possède plus qu'un dé sur son territoire
 	int fin = 0;
 	int gameTurn = 0;
+	//--unsigned int dices[2][8] = {};
+	//--unsigned int idTurn = 0;
+
 	do {
 		for (int i = 0; i < nbPlayers; i++) {
 			fin = 0;
@@ -112,7 +136,9 @@ int main(int argc, char *argv[])
 
 					if (gameTurn == 0)
 					{
-						UpdateGameState(&turn, &state);
+						Confrontation(&turn, &state, /*--&sGameTurn, --*/i);
+						//--UpdateGameState(ctxGUI, ++idTurn, &sGameTurn, &state);
+						
 						if (getNbTerritories(i, &state) == NB_CELL)
 						{
 							fin = 2;
@@ -120,11 +146,8 @@ int main(int argc, char *argv[])
 					}		
 					else {
 						break;
-					}
-						
+					}		
 				}
-
-
 			} while (fin == 1);
 
 			if (gameTurn == 1)							// Si le tour du joueur a échoué, on retablit les paramètres
@@ -152,6 +175,8 @@ int main(int argc, char *argv[])
 	free(tab_PlayTurn);
 	free(tab_InitGame);
 	free(tab_EndGame);
+
+	//--UninitGUI(ctxGUI);
 
 	CLOSELIB(hLib);
 
@@ -330,7 +355,7 @@ void InitGameState(const SMap *map, SGameState *state)
 	state->nbCells = NB_CELL;
 }
 
-void UpdateGameState(const STurn *turn, SGameState *state)
+void Confrontation(const STurn *turn, SGameState *state, /*--SGameTurn* sGameTurn, --*/int idPlayer)
 {
 	int NbDicesFrom = state->cells[turn->cellFrom].nbDices;
 	int NbDicesTo = state->cells[turn->cellTo].nbDices;
@@ -338,11 +363,19 @@ void UpdateGameState(const STurn *turn, SGameState *state)
 	int TotalFrom = 0;
 	int TotalTo = 0;
 
-	for (int i = 0; i < NbDicesFrom; i++)
-		TotalFrom += (rand() % 5) + 1;
+	int scoreDes;
 
-	for (int i = 0; i < NbDicesTo; i++)
-		TotalTo += (rand() % 5) + 1;
+	for (int i = 0; i < NbDicesFrom; i++) {
+		scoreDes = (rand() % 6) + 1;
+		TotalFrom += scoreDes;
+		//--sGameTurn->dices[0][i] = scoreDes;
+	}
+		
+	for (int i = 0; i < NbDicesTo; i++) {
+		scoreDes = (rand() % 6) + 1;
+		TotalTo += scoreDes;
+		//--sGameTurn->dices[1][i] = scoreDes;
+	}
 
 	if (TotalFrom > TotalTo)				// si l'attaquant a gagné
 	{
@@ -355,6 +388,8 @@ void UpdateGameState(const STurn *turn, SGameState *state)
 	{
 		state->cells[turn->cellFrom].nbDices = 1;
 	}
+	//--sGameTurn->idPlayer = idPlayer;
+	//--sGameTurn->turn = *(turn);
 }
 
 int getNbTerritories(int IDPlayer, SGameState *state) {
@@ -366,4 +401,3 @@ int getNbTerritories(int IDPlayer, SGameState *state) {
 	}
 	return nbTerr;
 }
-
