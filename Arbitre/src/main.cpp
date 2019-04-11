@@ -20,7 +20,7 @@ bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, in
 void InitGameState(const SMap *map, SGameState *state);
 void UpdateGameState(const STurn *turn, SGameState *state);
 int getNbTerritories(int IDPlayer, SGameState *state);
-
+bool isWin(int nbTerritories);
 
 int main(int argc, char *argv[])
 {
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 					if (gameTurn == 0)
 					{
 						UpdateGameState(&turn, &state);
-						if (getNbTerritories(i, &state) == NB_CELL)
+						if (isWin(getNbTerritories(i, &state)))
 						{
 							fin = 2;
 						}
@@ -367,3 +367,7 @@ int getNbTerritories(int IDPlayer, SGameState *state) {
 	return nbTerr;
 }
 
+bool isWin(int nbTerritories)
+{
+	return (nbTerritories == NB_CELL);
+}
