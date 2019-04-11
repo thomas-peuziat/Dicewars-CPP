@@ -112,6 +112,7 @@ int main(int argc, char *argv[])
 	}
 	std::cout << "Nom de la stratégie : '" << player.name << "'" << std::endl;
 	for(int i= 0; i < nbPlayers; i++)
+	{
 		ctx[i] = tab_InitGame[i](i, nbPlayers, &map, &player);
 		//--SetPlayerInfo(ctxGUI, 1, &player);		// A placer à chaque chargement de librairie de joueur.
 	}
@@ -140,16 +141,12 @@ int main(int argc, char *argv[])
 					{
 						Confrontation(&turn, &state, /*--&sGameTurn, --*/i);
 						//--UpdateGameState(ctxGUI, ++idTurn, &sGameTurn, &state);
-						
-						if (getNbTerritories(i, &state) == NB_CELL)
-						{
-							fin = 2;
-						}
 					}		
 					else {
 						break;
 					}		
 				}
+				win = isWin(i, &state);
 			} while (fin == 1);
 
 			if (!gameTurn)																	// Si le tour du joueur a échoué, on retablit les paramètres
