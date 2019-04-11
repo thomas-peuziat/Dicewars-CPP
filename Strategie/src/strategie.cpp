@@ -45,7 +45,7 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 	std::cout << static_cast<SContext*>(ctx)->id << std::endl;
 
 
-	if (gameTurn == 0)							// Le coup précédent est correct				
+	if (gameTurn)							// Le coup précédent est correct				
 	{
 		int cellFrom = -1;
 		int cellTo = -1;
