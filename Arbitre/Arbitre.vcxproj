@@ -157,10 +157,13 @@
   <ItemGroup>
     <ClCompile Include="src\generation.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MapLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Commun\interface.h" />
+    <ClInclude Include="..\Commun\interface_gui.h" />
     <ClInclude Include="..\Commun\library.h" />
+    <ClInclude Include="src\MapLoader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
