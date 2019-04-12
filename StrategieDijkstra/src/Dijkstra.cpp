@@ -1,9 +1,6 @@
 #include "Dijkstra.h"
-#include "../../Commun/interface.h"
 
-#include <iostream>
-#include <vector>
-#include <limits.h>
+
 
 //la distance est symbolisée par le nombre de dés.
 
@@ -17,44 +14,46 @@ void initDijkstra(SMap *map, const int nbCells, int idCellDepart) {
 
 	
 	for (int i = 0; i < nbCells; i++) {
-		distance[i] = INT_MAX; //init distance à l'infini
+		distance[i] = INT_MAX; //initialise avec une distance à l'infini
 		predecesseurs[i] = -1; //pas de prédécesseur pour le moment
 		sommetDijkstra[i] = false; //aucun sommet analysé pour le moment
 	}
 
-	//on change pour notre cellule de départ
+	//on change les données pour notre cellule de départ
 	distance[idCellDepart] = 0;
 	sommetDijkstra[idCellDepart] = true;
 
-	// TODO faire itérations
+	//itérations
+	iterationDijkstra(map, nbCells, distance, predecesseurs, idCellDepart, sommetDijkstra);
+	Affiche_Parcours_Min(distance, predecesseurs, 1, 2, map);
 }
 
-void iterationDijkstra(SMap* map, int nbCells, std::vector<int> &distance, std::vector<int> &predecesseurs, int idCellDepart, std::vector<int> &sommetDijkstra, int nbSommetsTraites)
+void iterationDijkstra(SMap* map, int nbCells, std::vector<int> &distance, std::vector<int> &predecesseurs, int idCellDepart, std::vector<bool> &sommetDijkstra)
 {
 	//déclaration des variables
-	int      New_Sommet = -1;       //nouveau sommet à étudier
-	SCell** successeurs = nullptr;          //maillon qui parcoure notre liste
-	int    min_sommet = INT_MAX;  //distance du sommet successeur le plus proche
-	int    tmp_dist = 0;         //valeur temporaire pour savoir si on a changé de distances
-	int i = 0;                    //boucle
-	int nbTraites = 0;
+	int      newSommet = -1; //nouveau sommet à étudier
+	SCell** successeurs = nullptr;  //maillon qui parcoure notre liste
+	int    minSommet = INT_MAX;  //distance du sommet successeur le plus proche
+	int    distanceTMP = 0; //valeur temporaire pour savoir si on a changé de distances
+	int i = 0; //boucle
+	int nbTraites = 0; //nombre de sommets traités
 
 	while (nbTraites != nbCells) {
 		//alloue la mémoire
 		successeurs = (SCell**)malloc(sizeof(SCell));
-
-		//copie des ancres des listes
 		successeurs = map->cells->neighbors;
 
-		//parcoure la liste des successeurs
+		//pour parcourir la liste des successeurs
 		int i = 0;
 		while (successeurs[i] != NULL)
 		{
-			//calcule la distance la plus courte de chaque sommet
-			tmp_dist = distance[successeurs[i]->infos.id];
-			distance[successeurs[i]->infos.id] = mini(tmp_dist, distance[idCellDepart] + successeurs[i]->infos.nbDices); //calcule la plus courte distance
-			 //si on a modification de la distance minimale alors on a changement de prédécesseur
-			if (tmp_dist != distance[successeurs[i]->infos.id])
+			//récupère la distance la plus courte (actuelle du sommet en cours)
+			distanceTMP = distance[successeurs[i]->infos.id];
+			//calcule la plus courte distance
+			distance[successeurs[i]->infos.id] = mini(distanceTMP, distance[idCellDepart] + successeurs[i]->infos.nbDices); 
+			 
+			//si on a modification de la distance minimale alors on a changement de prédécesseur
+			if (distanceTMP != distance[successeurs[i]->infos.id])
 				predecesseurs[successeurs[i]->infos.id] = idCellDepart;
 			i++;
 		}
@@ -64,14 +63,14 @@ void iterationDijkstra(SMap* map, int nbCells, std::vector<int> &distance, std::
 		{
 			if (sommetDijkstra[j] == 0)
 			{
-				min_sommet = mini(min_sommet, distance[j]);  //choisis la distance du successeur le plus proche
-				if (min_sommet == distance[j])               //choisis le successeur le plus proche
-					New_Sommet = j;
+				minSommet = mini(minSommet, distance[j]);  //choisis la distance du successeur le plus proche
+				if (minSommet == distance[j])               //choisis le successeur le plus proche
+					newSommet = j;
 			}
 		}
 
 		//ce nouveau sommet est considéré comme traité
-		sommetDijkstra[New_Sommet] = 1;
+		sommetDijkstra[newSommet] = 1;
 		nbTraites++;
 	}
 
@@ -94,9 +93,10 @@ int mini(int a, int b)
 	return min;
 }
 
+// TODO a tester
 void Affiche_Parcours_Min(std::vector<int> &distance, std::vector<int> &predecesseurs, int cellDep, int cellArr, SMap* map)
 {
-	int parcours = cellArr;
+	int currentCell = cellArr;
 	int tmp = 0;
 
 	//affiche le parcours minimal
@@ -109,14 +109,14 @@ void Affiche_Parcours_Min(std::vector<int> &distance, std::vector<int> &predeces
 	//s'il y'a un trajet possible
 	else
 	{
-		//tant qu'on est pas revenu au point de départ
-		while (parcours != cellDep)
+		//tant qu'on n'est pas revenu au point de départ
+		while (currentCell != cellDep)
 		{
-			tmp = distance[parcours];      //sauvegarde de la distance à la raciner
-		//affiche le nom du sommet successeur et la distance par rapport au départ
-			std::cout << "distance par rapport au départ -> " << distance[parcours] << std::endl;
-			parcours = predecesseurs[parcours]; //le successeur devient le prédecesseur
-			std::cout << " distance entre 2 sommets--> "<< tmp - distance[parcours] << std::endl; //distance entre 2 sommets
+			tmp = distance[currentCell];      //sauvegarde de la distance à la racine
+			//affiche le nom du sommet successeur et la distance par rapport au départ
+			std::cout << "distance par rapport au départ -> " << distance[currentCell] << std::endl;
+			currentCell = predecesseurs[currentCell]; //le successeur devient le prédecesseur
+			std::cout << " distance entre 2 sommets--> "<< tmp - distance[currentCell] << std::endl; //distance entre 2 sommets
 		}
 		std::cout << "point de départ" << map[cellDep].cells->infos.id << std::endl; //affiche le point de départ
 	}
