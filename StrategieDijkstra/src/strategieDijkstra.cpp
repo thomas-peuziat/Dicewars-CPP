@@ -3,6 +3,8 @@
 #include <iostream>
 #include <time.h>
 
+#include "Dijkstra.h"
+
 #ifdef _MSC_VER
 #pragma warning(disable:4996)	// disable _CRT_SECURE_NO_WARNINGS
 #endif
@@ -41,7 +43,7 @@ API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *ma
 API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *state, STurn *turn)
 {
 	std::cout << "PlayTurn" << std::endl;
-
+	SContext* contexte = static_cast<SContext*>(ctx);
 	SCell *territories = static_cast<SContext*>(ctx)->map->cells;
 
 
@@ -50,6 +52,9 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 		int cellFrom = -1, cellTo = -1;
 		
 		//state->nbCells donne le nombre de cell dans la map
+
+		initDijkstra(contexte->map, state->nbCells, 0);
+
 
 		/*
 			Pour tous nos territoires (ou que la moitié puisqu'on va essayer de tous les rejoindre ? a vérifier)

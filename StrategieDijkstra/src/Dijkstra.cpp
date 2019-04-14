@@ -6,7 +6,7 @@
 
 
 //idCellDepart => id de la cellue pour laquelle on cherche le plus court chemin
-void initDijkstra(SMap *map, const int nbCells, int idCellDepart) {
+void initDijkstra(const SMap *map, const int nbCells, int idCellDepart) {
 
 	std::vector<int> distance = {}; //tableau des distances entre les cellules
 	std::vector<int> predecesseurs = {}; //tableau des predecesseurs
@@ -28,7 +28,7 @@ void initDijkstra(SMap *map, const int nbCells, int idCellDepart) {
 	Affiche_Parcours_Min(distance, predecesseurs, 1, 2, map);
 }
 
-void iterationDijkstra(SMap* map, int nbCells, std::vector<int> &distance, std::vector<int> &predecesseurs, int idCellDepart, std::vector<bool> &sommetDijkstra)
+void iterationDijkstra(const SMap* map, int nbCells, std::vector<int> &distance, std::vector<int> &predecesseurs, int idCellDepart, std::vector<bool> &sommetDijkstra)
 {
 	//déclaration des variables
 	int      newSommet = -1; //nouveau sommet à étudier
@@ -94,7 +94,7 @@ int mini(int a, int b)
 }
 
 // TODO a tester
-void Affiche_Parcours_Min(std::vector<int> &distance, std::vector<int> &predecesseurs, int cellDep, int cellArr, SMap* map)
+void Affiche_Parcours_Min(std::vector<int> &distance, std::vector<int> &predecesseurs, int cellDep, int cellArr, const SMap* map)
 {
 	int currentCell = cellArr;
 	int tmp = 0;
