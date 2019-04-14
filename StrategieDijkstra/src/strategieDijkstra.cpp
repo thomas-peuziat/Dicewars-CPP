@@ -42,18 +42,20 @@ API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *ma
 // 1 coup terminé
 API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *state, STurn *turn)
 {
-	std::cout << "PlayTurn" << std::endl;
+	std::cout << "PlayTurn DIJKSTRA" << std::endl;
 	SContext* contexte = static_cast<SContext*>(ctx);
 	SCell *territories = static_cast<SContext*>(ctx)->map->cells;
 
 
 	//si le coup précédent est valide
-	if (gameTurn == 0) {
-		int cellFrom = -1, cellTo = -1;
+	if (gameTurn) {
+		int cellFrom = 1, cellTo = 1;
 		
 		//state->nbCells donne le nombre de cell dans la map
-
+		std::cout << "Appel InitDijkstra" << std::endl;
 		initDijkstra(contexte->map, state->nbCells, 0);
+
+		std::cout << "Fin initDijkstra" << std::endl;
 
 
 		/*
