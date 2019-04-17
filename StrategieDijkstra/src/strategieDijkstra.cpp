@@ -3,6 +3,8 @@
 #include <iostream>
 #include <time.h>
 
+#include "Dijkstra.h"
+
 #ifdef _MSC_VER
 #pragma warning(disable:4996)	// disable _CRT_SECURE_NO_WARNINGS
 #endif
@@ -40,16 +42,33 @@ API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *ma
 // 1 coup terminé
 API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *state, STurn *turn)
 {
-	std::cout << "PlayTurn" << std::endl;
-
+	std::cout << "PlayTurn DIJKSTRA" << std::endl;
+	SContext* contexte = static_cast<SContext*>(ctx);
 	SCell *territories = static_cast<SContext*>(ctx)->map->cells;
 
 
 	//si le coup précédent est valide
-	if (gameTurn == 0) {
-		int cellFrom = -1, cellTo = -1;
+	if (gameTurn) {
+		int cellFrom = 1, cellTo = 1;
 		
 		//state->nbCells donne le nombre de cell dans la map
+		std::cout << "Appel InitDijkstra" << std::endl;
+		initDijkstra(contexte->map, state->nbCells, 0);
+
+		std::cout << "Fin initDijkstra" << std::endl;
+
+
+		/*
+			Pour tous nos territoires (ou que la moitié puisqu'on va essayer de tous les rejoindre ? a vérifier)
+				Récupérer un territoire de départ
+				Calculer le plus court chemin avec tous les autres disponibles (même s'ils appartiennent à la même composante connexe)
+
+			Dans le cas ou les plus courts chemins sont égaux
+				Sélectionner le territoire attaquant avec la plus grosse différence de dés par rapport au 1er défenseur
+				attaquer avec le territoire ayant le plus petit nombre de dés
+					CAR - 2 dés contre 1 : environ 74% de chance de gagner
+						- 3 dés contre 2 : environ 69% de chance de gagner
+		*/
 	}
 	return 0;
 }

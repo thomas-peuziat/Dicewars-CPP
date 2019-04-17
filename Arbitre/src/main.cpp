@@ -125,7 +125,8 @@ int main(int argc, char *argv[])
 	bool win = false;
 
 	do {
-		// Pour chaque joueurs
+		// Pour chaque joueurs 
+		//mettre i à 1 si on veut tester que la 2eme stratégie
 		for (int i = 0; i < nbPlayers; i++) {
 			fin = 0;
 			gameTurn = 1;
