@@ -224,3 +224,51 @@ bool isWin(int idPlayer, SGameState *state)
 {
 	return (getNbTerritories(idPlayer, state) == NB_CELL);
 }
+
+
+int getMaxConnexite(int IdPlayer, const SMap *map)
+{
+
+	int color = 0;
+	std::vector<int> colorVector(NB_CELL, color);									// Initialisation du vector
+	for (int i = 0; i < NB_CELL; i++) 
+	{
+		if (map->cells[i].infos.owner == IdPlayer)									// Le celulle doit être la sienne
+		{
+			if (colorVector.at(i) == 0)
+			{
+				color++;
+				colorVector.at(i) = color;
+			}
+			else {
+			}
+
+			for (int j = 0; j < map->cells[i].nbNeighbors; j++)
+			{
+				if (map->cells[i].neighbors[j]->infos.owner == IdPlayer)									// Le celulle doit être la sienne
+				{
+					int idCell = map->cells[i].neighbors[j]->infos.id;
+					if (colorVector.at(idCell) != 0)
+					{
+						modifierValuesVector(colorVector.at(idCell), color, colorVector);
+					}
+					else {
+						colorVector.at(j) = color;
+					}
+				}
+			}
+			
+		}
+	}
+
+	return 0;
+}
+
+void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<int> &colorVector) {
+
+	for (int i = 0; i < NB_CELL; i++) {
+		if (colorVector.at(i) == oldColorNumber) {
+			colorVector.at(i) = newColorNumber;
+		}
+	}
+}

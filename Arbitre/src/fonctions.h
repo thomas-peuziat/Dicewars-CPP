@@ -14,4 +14,6 @@ void InitGameState(const SMap *map, SGameState *state);
 void Confrontation(const STurn *turn, SGameState *state, /*--SGameTurn *sGameTurn, --*/int idPlayer);
 int getNbTerritories(int IDPlayer, SGameState *state);
 bool isWin(int idPlayer, SGameState *state);
+int getMaxConnexite(int IdPlayer, const SMap *map);
+void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<int> &colorVector);
 //void PlayGame(const int nbPlayers, void* ctx[], const SGameState *state, const SMap *map, pInitGame* tab_InitGame, pPlayTurn* tab_PlayTurn , pEndGame* tab_InitGame);
