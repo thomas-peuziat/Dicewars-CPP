@@ -261,7 +261,28 @@ int getMaxConnexite(int IdPlayer, const SMap *map)
 		}
 	}
 
-	return 0;
+	std::map<unsigned int, unsigned int> nbColor;
+
+	for (auto it : colorVector) {
+		if (it != 0) {
+			auto search = nbColor.find(it);
+			if (search == nbColor.end()) {
+				nbColor.insert(it, 1);
+			}
+			else {
+				search->second++;
+			}
+		}
+	}
+
+	int max = 0;
+	for (auto it : nbColor) {
+		if (it.second > max) {
+			max = it.second;
+		}
+	}
+
+	return max;
 }
 
 void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<int> &colorVector) {

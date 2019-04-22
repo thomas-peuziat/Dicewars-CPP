@@ -2,6 +2,7 @@
 #include "../../Commun/interface.h"
 #include "../../Commun/library.h"
 #include <vector>
+#include <map>
 const int NB_CELL = 10;
 
 
