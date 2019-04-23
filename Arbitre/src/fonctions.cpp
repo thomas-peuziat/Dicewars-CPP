@@ -225,7 +225,6 @@ bool isWin(int idPlayer, SGameState *state)
 	return (getNbTerritories(idPlayer, state) == NB_CELL);
 }
 
-
 int getMaxConnexite(int IdPlayer, const SMap *map)
 {
 
@@ -291,5 +290,24 @@ void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<in
 		if (colorVector.at(i) == oldColorNumber) {
 			colorVector.at(i) = newColorNumber;
 		}
+	}
+}
+
+void distributionDes(int idPlayer, int nbDes, const SMap *map)
+{
+	std::vector<unsigned int> TCellPerPlayer;
+	unsigned int cellPosition;
+
+	// TODO : Optimiser parce qu'on passe plusieurs fois dans toute la map pour tout les joueurs
+	// Faire une struct joueur avec tableau de cellule pour chaque joueur ?
+	for (auto i = 0; i < map->nbCells; i++) {
+		if (map->cells[i].infos.owner == idPlayer) {
+			TCellPerPlayer.push_back(map->cells[i].infos.id);
+		}
+	}
+
+	for (auto j = 0; j < nbDes; j++) {
+		cellPosition = rand() % TCellPerPlayer.size();				// Choisi une cellule parmis les cellules d'un joueur
+		map->cells[TCellPerPlayer[cellPosition]].infos.nbDices++;	// Ajoute un dés sur cette cellule
 	}
 }
