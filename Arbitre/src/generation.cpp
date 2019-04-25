@@ -1,15 +1,4 @@
-#include <iostream>
-#include <ctime>
-#include <cstdlib>
-#include <vector>
-#include <set>
-#include <map>
 #include "generation.h"
-
-
-typedef std::pair<int, int> Coordinates;
-typedef std::vector<std::vector<int>> Matrix;
-typedef std::map<int, std::set<Coordinates>> map;
 
 unsigned int setNumberTerritories(unsigned int nb_players) {
 	int a = 30 + rand() % (10 - 0) + 0;
@@ -34,19 +23,19 @@ std::set<Coordinates> odd_coordinates(const Coordinates &coord, int L, int C) {
 		list.insert(std::make_pair(coord.first, coord.second - 1));
 	}
 
-	if (coord.first + 1 <= C && coord.second - 1 >= 0) {
+	if (coord.first + 1 < C && coord.second - 1 >= 0) {
 		list.insert(std::make_pair(coord.first + 1, coord.second - 1));
 	}
 
-	if (coord.first + 1 <= C) {
+	if (coord.first + 1 < C) {
 		list.insert(std::make_pair(coord.first + 1, coord.second));
 	}
 
-	if (coord.first + 1 <= C && coord.second + 1 <= L) {
+	if (coord.first + 1 < C && coord.second + 1 < L) {
 		list.insert(std::make_pair(coord.first + 1, coord.second + 1));
 	}
 
-	if (coord.second + 1 <= L) {
+	if (coord.second + 1 < L) {
 		list.insert(std::make_pair(coord.first, coord.second + 1));
 	}
 
@@ -74,15 +63,15 @@ std::set<Coordinates> even_coordinates(const Coordinates &coord, int L, int C) {
 		list.insert(std::make_pair(coord.first, coord.second - 1));
 	}
 
-	if (coord.first + 1 <= C) {
+	if (coord.first + 1 < C) {
 		list.insert(std::make_pair(coord.first + 1, coord.second));
 	}
 
-	if (coord.second + 1 <= L) {
+	if (coord.second + 1 < L) {
 		list.insert(std::make_pair(coord.first, coord.second + 1));
 	}
 
-	if (coord.first - 1 >= 0 && coord.second + 1 <= L) {
+	if (coord.first - 1 >= 0 && coord.second + 1 < L) {
 		list.insert(std::make_pair(coord.first - 1, coord.second + 1));
 	}
 
@@ -170,8 +159,8 @@ bool isIsolated(const Matrix &mat, Coordinates coord, int L, int C) {
 	return res;
 }
 
-void afficherMap(const map &m) {
-	for (map::const_iterator it = m.begin(); it != m.end(); ++it) {
+void afficherMap(const Map &m){
+	for (Map::const_iterator it = m.begin(); it != m.end(); ++it) {
 		std::cout << "key --> " << it->first << std::endl;
 		for (Coordinates coord : it->second) {
 			std::cout << " |   x= " << coord.first << ", y= " << coord.second << std::endl;
@@ -190,7 +179,7 @@ void initialisationMap() {
 	int L = 5;
 
 	Matrix matrix(C, std::vector<int>(L, -1));
-	map map;
+	Map map;
 
 	// Affichage Matrix	
 	displayMatrix(L, C, matrix);

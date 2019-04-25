@@ -6,6 +6,7 @@
 #include "MapLoader.h"
 #include "../../Commun/interface_gui.h"
 #include "fonctions.h"
+#include "generation.h"
 
 #define GETFUNCTION(handler,name) \
 	if ((name = (p##name)GETPROC(hLib, #name)) == nullptr)\
@@ -14,6 +15,19 @@
 		return(-1);\
 	}
 
+
+void LoadMapPerso(Regions &regions, Map map) {
+	for (auto iterator : map) {
+		std::set<Coordinates> coor = iterator.second;
+		std::vector<std::pair<unsigned int,unsigned int>> monVector;
+		for (auto it2 : coor) {
+
+			monVector.push_back(std::make_pair(it2.first, it2.second));
+		}
+		
+		regions.push_back(monVector);
+	}
+}
 
 
 int main(int argc, char *argv[])
@@ -73,29 +87,34 @@ int main(int argc, char *argv[])
 
 	*/
 
-
+	
 	SMap map;
 	SGameState state;
 	SPlayerInfo player[nbPlayers];
 	STurn turn;
 	void *ctx[nbPlayers];
-	//--void *ctxGUI;
-	//--SGameTurn sGameTurn;
-	//--unsigned int idTurn = 0;
 
-	//--for (unsigned int i = 0; i < 8; ++i)
-	//--	for (unsigned int j = 0; j < 2; ++j)
-	//--		sGameTurn.dices[j][i] = 0;
+	//InitMap(&map);
+	//InitGameState(&map, &state);
 
-	//--Regions regions;							// vector de vector de pair, donc la grille, à relier à la génération de SMap
-	//--LoadDefaultMap(regions);
 
-	//--SRegions *mapCells = ConvertMap(regions);	// Convert des std::vector< std::vector<std::pair<unsigned int, unsigned int>> > en SRegions*
-	//--ctxGUI = InitGUI(nbPlayers, mapCells);		
-	//--DeleteMap(mapCells);						// Après InitGUI
 
-	InitMap(&map);
-	InitGameState(&map, &state);
+	void *ctxGUI;
+	SGameTurn sGameTurn;
+	unsigned int idTurn = 0;
+
+	for (unsigned int i = 0; i < 8; ++i)
+		for (unsigned int j = 0; j < 2; ++j)
+			sGameTurn.dices[j][i] = 0;
+
+	Regions regions;							// vector de vector de pair, donc la grille, à relier à la génération de SMap
+	LoadDefaultMap(regions);
+
+	SRegions *mapCells = ConvertMap(regions);	// Convert des std::vector< std::vector<std::pair<unsigned int, unsigned int>> > en SRegions*
+	ctxGUI = InitGUI(nbPlayers, mapCells);		
+	DeleteMap(mapCells);						// Après InitGUI
+
+	
 
 	//--SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
 	for (unsigned int idxStrat = 0; idxStrat < nbPlayers; idxStrat++)
@@ -156,7 +175,6 @@ int main(int argc, char *argv[])
 				break;
 		}
 	} while (!win);
-	// TODO : Penser au fait qu'on utilise un tableau de ctx, un par joueur
 	
 
 	EndGame(ctx[0], 1);
@@ -171,4 +189,7 @@ int main(int argc, char *argv[])
 
 	return(0);
 }
+
+
+
 

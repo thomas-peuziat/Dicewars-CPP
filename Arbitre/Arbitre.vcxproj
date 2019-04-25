@@ -164,8 +164,8 @@
     <ClInclude Include="..\Commun\interface.h" />
     <ClInclude Include="..\Commun\interface_gui.h" />
     <ClInclude Include="..\Commun\library.h" />
-    <ClInclude Include="generation.h" />
     <ClInclude Include="src\fonctions.h" />
+    <ClInclude Include="src\generation.h" />
     <ClInclude Include="src\MapLoader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -225,6 +225,7 @@ bool isWin(int idPlayer, SGameState *state)
 	return (getNbTerritories(idPlayer, state) == NB_CELL);
 }
 
+
 int getMaxConnexite(int IdPlayer, const SMap *map)
 {
 
@@ -262,11 +263,12 @@ int getMaxConnexite(int IdPlayer, const SMap *map)
 
 	std::map<unsigned int, unsigned int> nbColor;
 
-	for (auto it : colorVector) {
+	for (const int& it : colorVector) {
 		if (it != 0) {
 			auto search = nbColor.find(it);
 			if (search == nbColor.end()) {
-				nbColor.insert(it, 1);
+				unsigned int value = it;
+				nbColor.insert({ it, 1 });
 			}
 			else {
 				search->second++;
@@ -274,7 +276,7 @@ int getMaxConnexite(int IdPlayer, const SMap *map)
 		}
 	}
 
-	int max = 0;
+	unsigned int max = 0;
 	for (auto it : nbColor) {
 		if (it.second > max) {
 			max = it.second;
@@ -283,6 +285,7 @@ int getMaxConnexite(int IdPlayer, const SMap *map)
 
 	return max;
 }
+
 
 void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<int> &colorVector) {
 
