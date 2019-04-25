@@ -45,7 +45,7 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 	std::cout << static_cast<SContext*>(ctx)->id << std::endl;
 
 
-	if (gameTurn)							// Le coup précédent est correct				
+	if (gameTurn == static_cast<SContext*>(ctx)->id)							// Le coup précédent est correct				
 	{
 		int cellFrom = -1;
 		int cellTo = -1;
@@ -77,13 +77,13 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 
 				turn->cellFrom = cellFrom;
 				turn->cellTo = cellTo;
-				return 1;
+				return 0;
 			}
 		}
 
 	}
 
-	return 0;
+	return 1;
 }
 
 API_EXPORT void EndGame(void *ctx, unsigned int idWinner)

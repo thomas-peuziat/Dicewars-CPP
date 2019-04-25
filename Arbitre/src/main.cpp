@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 	HLIB hLib;
 	for (int i = 0; i < nbPlayers; i++)
 	{
-		if ((hLib = LOADLIB(argv[i+1])) == nullptr)
+		if ((hLib = LOADLIB(argv[1])) == nullptr)
 		{
 			std::cerr << "Impossible de charger la librairie '" << argv[i + 1] << "'" << std::endl;
 			return(-1);
@@ -94,10 +94,10 @@ int main(int argc, char *argv[])
 	STurn turn;
 	void *ctx[nbPlayers];
 
-	//InitMap(&map);
-	//InitGameState(&map, &state);
+	InitMap(&map);
+	InitGameState(&map, &state);
 
-
+	/*
 
 	void *ctxGUI;
 	SGameTurn sGameTurn;
@@ -114,9 +114,10 @@ int main(int argc, char *argv[])
 	ctxGUI = InitGUI(nbPlayers, mapCells);		
 	DeleteMap(mapCells);						// Après InitGUI
 
-	
+	*/
 
 	//--SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
+
 	for (unsigned int idxStrat = 0; idxStrat < nbPlayers; idxStrat++)
 	{
 		player[idxStrat].name[0] = '\0';
@@ -148,8 +149,9 @@ int main(int argc, char *argv[])
 		//mettre i à 1 si on veut tester que la 2eme stratégie
 		for (int i = 0; i < nbPlayers; i++) {
 			fin = 0;
-			gameTurn = 1;
-
+			gameTurn = i;
+			int ndDes = getMaxConnexite(i, &map);
+			int ndDes2 = getMaxConnexite(i+1, &map);
 			// Tant que le joueur fait un coup valide ou que le joueur a fini son tour
 			do {
 				fin = tab_PlayTurn[i](gameTurn, ctx[i], &state, &turn);
@@ -160,19 +162,22 @@ int main(int argc, char *argv[])
 						//--UpdateGameState(ctxGUI, ++idTurn, &sGameTurn, &state);
 					}		
 					else {
+						gameTurn++;
 						break;
 					}		
 				}
 				win = isWin(i, &state);
-			} while (fin == 1);
+			} while (!fin);
 
-			if (!gameTurn)																	// Si le tour du joueur a échoué, on retablit les paramètres
+			if (gameTurn != i)																	// Si le tour du joueur a échoué, on retablit les paramètres
 				RetablirEtat(&map, &state);
 			else																			// Sinon on valide les paramètres
 				ValiderEtat(&map, &state);
 
 			if (win)
 				break;
+			ndDes = getMaxConnexite(i, &map);
+			distributionDes(i, ndDes, &map);
 		}
 	} while (!win);
 	

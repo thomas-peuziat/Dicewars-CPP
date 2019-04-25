@@ -22,10 +22,10 @@ void InitMap(SMap *map)
 	{
 		SCell c;
 		c.infos.id = i;
-		c.infos.owner = rand() % 5;
+		c.infos.owner = rand() % 2;
+		std::cout << c.infos.owner << std::endl;
 		c.infos.nbDices = rand() % 6 + 1;
 		cell[i] = c;
-
 
 	}
 
@@ -142,6 +142,7 @@ void InitMap(SMap *map)
 bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID) {
 	const SCell& cellFrom = map->cells[turn->cellFrom];
 	const SCellInfo& cellInfoFrom = state->cells[cellFrom.infos.id];
+
 	const SCell& cellTo = map->cells[turn->cellTo];
 	const SCellInfo& cellInfoTo = state->cells[cellTo.infos.id];
 
@@ -250,10 +251,11 @@ int getMaxConnexite(int IdPlayer, const SMap *map)
 					int idCell = map->cells[i].neighbors[j]->infos.id;
 					if (colorVector.at(idCell) != 0)
 					{
-						modifierValuesVector(colorVector.at(idCell), color, colorVector);
+						if (colorVector.at(idCell) != colorVector.at(i))
+							modifierValuesVector(colorVector.at(idCell), colorVector.at(i), colorVector);
 					}
 					else {
-						colorVector.at(j) = color;
+						colorVector.at(idCell) = color;
 					}
 				}
 			}
