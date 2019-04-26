@@ -94,18 +94,14 @@ int main(int argc, char *argv[])
 	STurn turn;
 	void *ctx[nbPlayers];
 
-	InitMap(&map);
-	InitGameState(&map, &state);
+	//InitMap(&map);
+	//InitGameState(&map, &state);
 
-	/*
+	
 
 	void *ctxGUI;
 	SGameTurn sGameTurn;
-	unsigned int idTurn = 0;
-
-	for (unsigned int i = 0; i < 8; ++i)
-		for (unsigned int j = 0; j < 2; ++j)
-			sGameTurn.dices[j][i] = 0;
+	
 
 	Regions regions;							// vector de vector de pair, donc la grille, à relier à la génération de SMap
 	LoadDefaultMap(regions);
@@ -113,32 +109,42 @@ int main(int argc, char *argv[])
 	SRegions *mapCells = ConvertMap(regions);	// Convert des std::vector< std::vector<std::pair<unsigned int, unsigned int>> > en SRegions*
 	ctxGUI = InitGUI(nbPlayers, mapCells);		
 	DeleteMap(mapCells);						// Après InitGUI
+	
+	
 
-	*/
-
-	//--SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
+	
 
 	for (unsigned int idxStrat = 0; idxStrat < nbPlayers; idxStrat++)
 	{
-		player[idxStrat].name[0] = '\0';
+		
+		//player[idxStrat].name[0] = '\0';
 
 		for (unsigned int i = 0; i < NbMembers; ++i) {
 			player[idxStrat].members[i][0] = '\0';
 		}
-
+		
 		ctx[idxStrat] = tab_InitGame[idxStrat](idxStrat, nbPlayers, &map, &player[idxStrat]);
-		//--SetPlayerInfo(ctxGUI, 1, &player[idxStrat]);		// A placer à chaque chargement de librairie de joueur.
+		
+		SetPlayerInfo(ctxGUI, idxStrat, &player[idxStrat]);		// A placer à chaque chargement de librairie de joueur.
 
-		std::cout << "Nom de la stratégie : '" << player[idxStrat].name << "'" << std::endl;
+		std::cout << "Nom de la strategie : '" << player[idxStrat].name << "'" << std::endl;
 
 
 
 		for (unsigned int i = 0; i < NbMembers; ++i)
 			std::cout << "Nom du membre #" << (i + 1) << " : '" << player[idxStrat].members[i] << "'" << std::endl;
 	}
+
+	unsigned int idTurn = 0;
 	
-
-
+	for (unsigned int i = 0; i < 8; ++i)
+		for (unsigned int j = 0; j < 2; ++j)
+			sGameTurn.dices[j][i] = 0;
+	
+	//SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
+	
+	int i;
+	std::cin >> i;
 	// Interblocage lorsque tout le monde ne possède plus qu'un dé sur son territoire
 	int fin = 0;
 	int gameTurn = 1;
@@ -150,8 +156,6 @@ int main(int argc, char *argv[])
 		for (int i = 0; i < nbPlayers; i++) {
 			fin = 0;
 			gameTurn = i;
-			int ndDes = getMaxConnexite(i, &map);
-			int ndDes2 = getMaxConnexite(i+1, &map);
 			// Tant que le joueur fait un coup valide ou que le joueur a fini son tour
 			do {
 				fin = tab_PlayTurn[i](gameTurn, ctx[i], &state, &turn);
@@ -167,17 +171,18 @@ int main(int argc, char *argv[])
 					}		
 				}
 				win = isWin(i, &state);
-			} while (!fin);
+			} while (!fin && !win);
 
 			if (gameTurn != i)																	// Si le tour du joueur a échoué, on retablit les paramètres
 				RetablirEtat(&map, &state);
-			else																			// Sinon on valide les paramètres
+			else {																			// Sinon on valide les paramètres
 				ValiderEtat(&map, &state);
-
+				int ndDes = getMaxConnexite(i, &map);
+				distributionDes(i, ndDes, &map);
+			}
 			if (win)
 				break;
-			ndDes = getMaxConnexite(i, &map);
-			distributionDes(i, ndDes, &map);
+			
 		}
 	} while (!win);
 	

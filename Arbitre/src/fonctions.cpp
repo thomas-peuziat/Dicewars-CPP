@@ -223,7 +223,13 @@ int getNbTerritories(int IDPlayer, SGameState *state) {
 
 bool isWin(int idPlayer, SGameState *state)
 {
-	return (getNbTerritories(idPlayer, state) == NB_CELL);
+	if (getNbTerritories(idPlayer, state) == NB_CELL) {
+		std::cout << "Player " << idPlayer << " win" << std::endl;
+		return true;
+	}
+
+	return false;
+	
 }
 
 
@@ -255,7 +261,7 @@ int getMaxConnexite(int IdPlayer, const SMap *map)
 							modifierValuesVector(colorVector.at(idCell), colorVector.at(i), colorVector);
 					}
 					else {
-						colorVector.at(idCell) = color;
+						colorVector.at(idCell) = colorVector.at(i);
 					}
 				}
 			}
@@ -313,6 +319,7 @@ void distributionDes(int idPlayer, int nbDes, const SMap *map)
 
 	for (auto j = 0; j < nbDes; j++) {
 		cellPosition = rand() % TCellPerPlayer.size();				// Choisi une cellule parmis les cellules d'un joueur
-		map->cells[TCellPerPlayer[cellPosition]].infos.nbDices++;	// Ajoute un dés sur cette cellule
+		if (map->cells[TCellPerPlayer[cellPosition]].infos.nbDices <= 8)
+			map->cells[TCellPerPlayer[cellPosition]].infos.nbDices++;	// Ajoute un dés sur cette cellule
 	}
 }
