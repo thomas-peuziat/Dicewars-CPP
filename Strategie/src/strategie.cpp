@@ -24,14 +24,14 @@ API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *ma
 	strcpy(info->name, "Test de librairie");
 	strcpy(info->members[0], "COUTY Killian");
 	strcpy(info->members[1], "DANIEL Florian");
-	strcpy(info->members[2], "GAUDUCHEAU Clément");
+	strcpy(info->members[2], "GAUDUCHEAU Clement");
 	strcpy(info->members[3], "PEUZIAT Thomas");
-
+	/*
 	ctx->id = id;
 	ctx->nbPlayers = nbPlayer;
 	ctx->infos = info;
 	ctx->map = map;
-
+	*/
 	return(ctx);
 }
 
@@ -45,7 +45,7 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 	std::cout << static_cast<SContext*>(ctx)->id << std::endl;
 
 
-	if (gameTurn)							// Le coup précédent est correct				
+	if (gameTurn == static_cast<SContext*>(ctx)->id)							// Le coup précédent est correct				
 	{
 		int cellFrom = -1;
 		int cellTo = -1;
@@ -53,7 +53,7 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 		int idx_own = 0;
 		int idx_adj = 0;
 
-		int ret = 1;					// Tirage aléatoire pour déterminer si le joueur va faire un coup
+		int ret = rand() % 2;					// Tirage aléatoire pour déterminer si le joueur va faire un coup
 		if (ret != 0)
 		{
 			// Parcours de toutes les celulles de la map
@@ -77,13 +77,13 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 
 				turn->cellFrom = cellFrom;
 				turn->cellTo = cellTo;
-				return 1;
+				return 0;
 			}
 		}
 
 	}
 
-	return 0;
+	return 1;
 }
 
 API_EXPORT void EndGame(void *ctx, unsigned int idWinner)

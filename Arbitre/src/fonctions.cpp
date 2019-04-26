@@ -22,10 +22,10 @@ void InitMap(SMap *map)
 	{
 		SCell c;
 		c.infos.id = i;
-		c.infos.owner = rand() % 5;
+		c.infos.owner = rand() % 2;
+		std::cout << c.infos.owner << std::endl;
 		c.infos.nbDices = rand() % 6 + 1;
 		cell[i] = c;
-
 
 	}
 
@@ -142,6 +142,7 @@ void InitMap(SMap *map)
 bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID) {
 	const SCell& cellFrom = map->cells[turn->cellFrom];
 	const SCellInfo& cellInfoFrom = state->cells[cellFrom.infos.id];
+
 	const SCell& cellTo = map->cells[turn->cellTo];
 	const SCellInfo& cellInfoTo = state->cells[cellTo.infos.id];
 
@@ -222,8 +223,15 @@ int getNbTerritories(int IDPlayer, SGameState *state) {
 
 bool isWin(int idPlayer, SGameState *state)
 {
-	return (getNbTerritories(idPlayer, state) == NB_CELL);
+	if (getNbTerritories(idPlayer, state) == NB_CELL) {
+		std::cout << "Player " << idPlayer << " win" << std::endl;
+		return true;
+	}
+
+	return false;
+	
 }
+
 
 int getMaxConnexite(int IdPlayer, const SMap *map)
 {
@@ -249,10 +257,11 @@ int getMaxConnexite(int IdPlayer, const SMap *map)
 					int idCell = map->cells[i].neighbors[j]->infos.id;
 					if (colorVector.at(idCell) != 0)
 					{
-						modifierValuesVector(colorVector.at(idCell), color, colorVector);
+						if (colorVector.at(idCell) != colorVector.at(i))
+							modifierValuesVector(colorVector.at(idCell), colorVector.at(i), colorVector);
 					}
 					else {
-						colorVector.at(j) = color;
+						colorVector.at(idCell) = colorVector.at(i);
 					}
 				}
 			}
@@ -262,11 +271,12 @@ int getMaxConnexite(int IdPlayer, const SMap *map)
 
 	std::map<unsigned int, unsigned int> nbColor;
 
-	for (auto it : colorVector) {
+	for (const int& it : colorVector) {
 		if (it != 0) {
 			auto search = nbColor.find(it);
 			if (search == nbColor.end()) {
-				nbColor.insert(it, 1);
+				unsigned int value = it;
+				nbColor.insert({ it, 1 });
 			}
 			else {
 				search->second++;
@@ -274,7 +284,7 @@ int getMaxConnexite(int IdPlayer, const SMap *map)
 		}
 	}
 
-	int max = 0;
+	unsigned int max = 0;
 	for (auto it : nbColor) {
 		if (it.second > max) {
 			max = it.second;
@@ -283,6 +293,7 @@ int getMaxConnexite(int IdPlayer, const SMap *map)
 
 	return max;
 }
+
 
 void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<int> &colorVector) {
 
@@ -308,6 +319,7 @@ void distributionDes(int idPlayer, int nbDes, const SMap *map)
 
 	for (auto j = 0; j < nbDes; j++) {
 		cellPosition = rand() % TCellPerPlayer.size();				// Choisi une cellule parmis les cellules d'un joueur
-		map->cells[TCellPerPlayer[cellPosition]].infos.nbDices++;	// Ajoute un dés sur cette cellule
+		if (map->cells[TCellPerPlayer[cellPosition]].infos.nbDices <= 8)
+			map->cells[TCellPerPlayer[cellPosition]].infos.nbDices++;	// Ajoute un dés sur cette cellule
 	}
 }

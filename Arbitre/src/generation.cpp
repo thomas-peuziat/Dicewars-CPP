@@ -1,157 +1,94 @@
-#include "../../Commun/interface.h"
-#include <iostream>
-#include <vector>
-
-const int NB_CELL = 30;
-
-
-SCell* generateCell(int nbCellToGenerate)
-{
-	SCellInfo infos;
-	infos.id = 1;
-	infos.owner = 1;
-	infos.nbDices = 2;
-
-	SCell *maCell = {};
-	maCell->infos = infos;
-
-	return nullptr;
-}
-/* Création d'une map */
-int CreateMap() {
-	SMap m = SMap();
-	/* Génération d'une matrice pour la création des cellules 
-	Simulation hexagonale */
-	int matrix[10][20] = {{-1}};
-
-	// Générer aléatoirement 2 chiffres (i et j)
-
-	return 0;
-}
-
-//(int,int) 
-
-/* Méthode pour l'adjacence d'une cellule */
-bool IsAdjacentPoint(int tab[10][20],int id_territory,int i_test,int j_test) {
-	bool res = false;
-	/* Prendre tous les points de chaque territoire et vérifier si adjacent*/
-
-	
-	return res;
-}
-
-bool isFreePoint(int tab[10][20],int i, int j){
-	return (tab[i][j] == -1);
-}
-
-bool isConnected() {
-	return false;
-}
-
-
-/*
-
-#include <iostream>
-#include <ctime>
-#include <cstdlib>
-#include <vector>
-#include <set>
-#include <map>
-
-using namespace std;
-typedef pair<int, int> Coordinates;
-typedef vector<vector<int>> Matrix;
-typedef map<int, set<Coordinates>> Map;
+#include "generation.h"
 
 unsigned int setNumberTerritories(unsigned int nb_players) {
 	int a = 30 + rand() % (10 - 0) + 0;
-	cout << "v1 = " << a << endl;
+	std::cout << "v1 = " << a << std::endl;
 
 	int mod = a % nb_players;
-	cout << "mod = " << a << "%" << nb_players << "=" << mod << endl;
+	std::cout << "mod = " << a << "%" << nb_players << "=" << mod << std::endl;
 
 	int final_nb = a;
 
 	if (mod != 0) {
 		final_nb = a + (nb_players - mod);
-		cout << "final_db = " << a << "+" << (nb_players - mod) << "=" << final_nb << endl;
+		std::cout << "final_db = " << a << "+" << (nb_players - mod) << "=" << final_nb << std::endl;
 	}
 
 	return final_nb;
 }
 
-set<Coordinates> odd_coordinates(const Coordinates &coord, int L, int C) {
-	set<Coordinates> list;
+std::set<Coordinates> odd_coordinates(const Coordinates &coord, int L, int C) {
+	std::set<Coordinates> list;
 	if (coord.second - 1 >= 0) {
-		list.insert(make_pair(coord.first, coord.second - 1));
+		list.insert(std::make_pair(coord.first, coord.second - 1));
 	}
 
-	if (coord.first + 1 <= C && coord.second - 1 >= 0) {
-		list.insert(make_pair(coord.first + 1, coord.second - 1));
+	if (coord.first + 1 < C && coord.second - 1 >= 0) {
+		list.insert(std::make_pair(coord.first + 1, coord.second - 1));
 	}
 
-	if (coord.first + 1 <= C) {
-		list.insert(make_pair(coord.first + 1, coord.second));
+	if (coord.first + 1 < C) {
+		list.insert(std::make_pair(coord.first + 1, coord.second));
 	}
 
-	if (coord.first + 1 <= C && coord.second + 1 <= L) {
-		list.insert(make_pair(coord.first + 1, coord.second + 1));
+	if (coord.first + 1 < C && coord.second + 1 < L) {
+		list.insert(std::make_pair(coord.first + 1, coord.second + 1));
 	}
 
-	if (coord.second + 1 <= L) {
-		list.insert(make_pair(coord.first, coord.second + 1));
+	if (coord.second + 1 < L) {
+		list.insert(std::make_pair(coord.first, coord.second + 1));
 	}
 
 	if (coord.first - 1 >= 0) {
-		list.insert(make_pair(coord.first - 1, coord.second));
+		list.insert(std::make_pair(coord.first - 1, coord.second));
 	}
 
 	for (auto it = list.begin(); it != list.end(); it++) {
-		cout << "(" << it->first << " " << it->second << ")";
+		std::cout << "(" << it->first << " " << it->second << ")";
 	}
-	cout << endl;
+	std::cout << std::endl;
 
 	return list;
 
 }
 
 
-set<Coordinates> even_coordinates(const Coordinates &coord, int L, int C) {
-	set<Coordinates> list;
+std::set<Coordinates> even_coordinates(const Coordinates &coord, int L, int C) {
+	std::set<Coordinates> list;
 	if (coord.first - 1 >= 0 && coord.second - 1 >= 0) {
-		list.insert(make_pair(coord.first - 1, coord.second - 1));
+		list.insert(std::make_pair(coord.first - 1, coord.second - 1));
 	}
 
 	if (coord.second - 1 >= 0) {
-		list.insert(make_pair(coord.first, coord.second - 1));
+		list.insert(std::make_pair(coord.first, coord.second - 1));
 	}
 
-	if (coord.first + 1 <= C) {
-		list.insert(make_pair(coord.first + 1, coord.second));
+	if (coord.first + 1 < C) {
+		list.insert(std::make_pair(coord.first + 1, coord.second));
 	}
 
-	if (coord.second + 1 <= L) {
-		list.insert(make_pair(coord.first, coord.second + 1));
+	if (coord.second + 1 < L) {
+		list.insert(std::make_pair(coord.first, coord.second + 1));
 	}
 
-	if (coord.first - 1 >= 0 && coord.second + 1 <= L) {
-		list.insert(make_pair(coord.first - 1, coord.second + 1));
+	if (coord.first - 1 >= 0 && coord.second + 1 < L) {
+		list.insert(std::make_pair(coord.first - 1, coord.second + 1));
 	}
 
 	if (coord.first - 1 >= 0) {
-		list.insert(make_pair(coord.first - 1, coord.second));
+		list.insert(std::make_pair(coord.first - 1, coord.second));
 	}
 
 	for (auto it = list.begin(); it != list.end(); it++) {
-		cout << "(" << it->first << " " << it->second << ")";
+		std::cout << "(" << it->first << " " << it->second << ")";
 	}
-	cout << endl;
+	std::cout << std::endl;
 
 	return list;
 }
 
-Coordinates pattern_treatment(const Coordinates &coord, int L, int C, const vector<vector<int>> &matrix) {
-	set<Coordinates> list;
+Coordinates pattern_treatment(const Coordinates &coord, int L, int C, const std::vector<std::vector<int>> &matrix) {
+	std::set<Coordinates> list;
 	if (coord.first % 2 == 0) {
 		list = even_coordinates(coord, L, C);
 	}
@@ -164,7 +101,7 @@ Coordinates pattern_treatment(const Coordinates &coord, int L, int C, const vect
 	auto first = list.begin(); // get iterator to 1st element
 
 	advance(first, rd_id + 1);
-	cout << "random values = " << rd_id << "/" << size << endl;
+	std::cout << "random values = " << rd_id << "/" << size << std::endl;
 
 	return *first;
 
@@ -173,18 +110,18 @@ Coordinates pattern_treatment(const Coordinates &coord, int L, int C, const vect
 
 void displayMatrix(const int L, const int C, const Matrix &matrix) {
 	for (int i = 0; i < L; i++) {
-		cout << "[ ";
+		std::cout << "[ ";
 		for (int j = 0; j < C; j++) {
-			cout << " " << matrix[j][i];
+			std::cout << " " << matrix[j][i];
 		}
-		cout << " ]" << endl;
+		std::cout << " ]" << std::endl;
 	}
-	cout << "----------" << endl;
+	std::cout << "----------" << std::endl;
 
 }
 
-void rd_expand_cell(const set<Coordinates> & list) {
-	cout << "list.size= " << list.size() << endl;
+void rd_expand_cell(const std::set<Coordinates> & list) {
+	std::cout << "list.size= " << list.size() << std::endl;
 }
 
 bool isEven(int a) {
@@ -192,7 +129,7 @@ bool isEven(int a) {
 }
 
 bool isIsolated(const Matrix &mat, Coordinates coord, int L, int C) {
-	set<Coordinates> neighbors;
+	std::set<Coordinates> neighbors;
 	bool res = true;
 	if (isEven(coord.first)) {
 		neighbors = even_coordinates(coord, L, C);
@@ -201,47 +138,47 @@ bool isIsolated(const Matrix &mat, Coordinates coord, int L, int C) {
 		neighbors = odd_coordinates(coord, L, C);
 	}
 
-	cout << "isIsolated --> ";
+	std::cout << "isIsolated --> ";
 	for (Coordinates neigh : neighbors) {
 		int x = neigh.first;
-		cout << "-";
+		std::cout << "-";
 		int y = neigh.second;
-		cout << "-";
+		std::cout << "-";
 
-		cout << "(x" << x << ",y" << y << ")";
-		cout << "(" << mat[x][y] << ")";
-		cout << "-";
+		std::cout << "(x" << x << ",y" << y << ")";
+		std::cout << "(" << mat[x][y] << ")";
+		std::cout << "-";
 		if (mat[y][x] == -1) {
 			res = false;
 		}
-		cout << "(" << neigh.first << ", " << neigh.second << ")";
+		std::cout << "(" << neigh.first << ", " << neigh.second << ")";
 	}
-	cout << endl;
-	cout << endl;
+	std::cout << std::endl;
+	std::cout << std::endl;
 
 	return res;
 }
 
-void afficherMap(const Map &m) {
+void afficherMap(const Map &m){
 	for (Map::const_iterator it = m.begin(); it != m.end(); ++it) {
-		std::cout << "key --> " << it->first << endl;
+		std::cout << "key --> " << it->first << std::endl;
 		for (Coordinates coord : it->second) {
-			cout << " |   x= " << coord.first << ", y= " << coord.second << endl;
+			std::cout << " |   x= " << coord.first << ", y= " << coord.second << std::endl;
 		}
-		cout << endl;
-		cout << endl;
+		std::cout << std::endl;
+		std::cout << std::endl;
 	}
 }
 
 
-int main() {
+void initialisationMap() {
 	srand((unsigned int)time(NULL));
 
 	int n = 4;
 	int C = 10;
 	int L = 5;
 
-	Matrix matrix(C, vector<int>(L, -1));
+	Matrix matrix(C, std::vector<int>(L, -1));
 	Map map;
 
 	// Affichage Matrix	
@@ -256,7 +193,7 @@ int main() {
 
 		int x = rand() % (x_borne_rd - 0) + 0;
 		int y = rand() % (y_borne_rd - 0) + 0;
-		cout << " Cell de base --> (x = " << x << ",y = " << y << ")" << endl;
+		std::cout << " Cell de base --> (x = " << x << ",y = " << y << ")" << std::endl;
 
 		bool check1 = false;
 		matrix[x][y] = 36;
@@ -269,7 +206,7 @@ int main() {
 		//}
 
 		// Insérer les coordonnées dans la map à la clé "n° de territoire"
-		map[i].insert(make_pair(x, y));
+		map[i].insert(std::make_pair(x, y));
 	}
 
 	afficherMap(map);
@@ -277,40 +214,38 @@ int main() {
 
 	for (int k = 0; k < n; k++) {
 		int size_territory = map.find(k)->second.size();
-		set<Coordinates> territory_cells = map.find(k)->second;
+		std::set<Coordinates> territory_cells = map.find(k)->second;
 
-		cout << "size_territory = " << size_territory << endl;
+		std::cout << "size_territory = " << size_territory << std::endl;
 		int id_cell_rd = rand() % (size_territory - 0) + 0;
 
-		cout << "id_cell_rd = " << id_cell_rd << endl;
+		std::cout << "id_cell_rd = " << id_cell_rd << std::endl;
 
 
-		set<Coordinates>::iterator it = territory_cells.begin();
+		std::set<Coordinates>::iterator it = territory_cells.begin();
 		advance(it, id_cell_rd);
 		Coordinates coord_a = *it;
-		cout << "coord_a --> " << coord_a.first << ", " << coord_a.second << endl;
+		std::cout << "coord_a --> " << coord_a.first << ", " << coord_a.second << std::endl;
 
 		bool check = false;
 		while (!check) {
 			Coordinates c = pattern_treatment(coord_a, L, C, matrix);
-			cout << "coord_c --> " << c.first << ", " << c.second << endl;
+			std::cout << "coord_c --> " << c.first << ", " << c.second << std::endl;
 			if (!isIsolated(matrix, c, L, C)) {
 				check = true;
 			}
 		}
 
-		cout << endl;
+		std::cout << std::endl;
 
 
-		//cout << "(" << coord_a.first << ":" << coord_a.second << ")" << endl;
+		//std::cout << "(" << coord_a.first << ":" << coord_a.second << ")" << std::endl;
 		//
 		//matrix[coord_a.second][coord_a.first] = k;
-		//map[k].insert(make_pair(coord_a.first, coord_a.second));
+		//map[k].insert(std::make_pair(coord_a.first, coord_a.second));
 	}
 	afficherMap(map);
 
 	displayMatrix(L, C, matrix);
 
 }
-
-*/
