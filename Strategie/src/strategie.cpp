@@ -26,23 +26,23 @@ API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *ma
 	strcpy(info->members[1], "DANIEL Florian");
 	strcpy(info->members[2], "GAUDUCHEAU Clement");
 	strcpy(info->members[3], "PEUZIAT Thomas");
-	/*
+	
 	ctx->id = id;
 	ctx->nbPlayers = nbPlayer;
 	ctx->infos = info;
 	ctx->map = map;
-	*/
+	
 	return(ctx);
 }
 
 API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *state, STurn *turn)
 {
-	std::cout << "PlayTurn" << static_cast<SContext*>(ctx)->id << std::endl;
+	//std::cout << "PlayTurn" << static_cast<SContext*>(ctx)->id << std::endl;
 
 
 	SCell *territories = static_cast<SContext*>(ctx)->map->cells;
 
-	std::cout << static_cast<SContext*>(ctx)->id << std::endl;
+	//std::cout << static_cast<SContext*>(ctx)->id << std::endl;
 
 
 	if (gameTurn == static_cast<SContext*>(ctx)->id)							// Le coup précédent est correct				

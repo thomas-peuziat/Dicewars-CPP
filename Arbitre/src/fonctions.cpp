@@ -9,8 +9,10 @@ void RetablirEtat(const SMap *map, SGameState *state)
 
 void ValiderEtat(SMap *map, const SGameState*state)
 {
-	for (int i = 0; i < map->nbCells; i++)
+	for (int i = 0; i < map->nbCells; i++) {
 		map->cells[i].infos = state->cells[i];
+	}
+		
 }
 
 void InitMap(SMap *map)
@@ -24,7 +26,7 @@ void InitMap(SMap *map)
 		c.infos.id = i;
 		c.infos.owner = rand() % 2;
 		std::cout << c.infos.owner << std::endl;
-		c.infos.nbDices = rand() % 6 + 1;
+		c.infos.nbDices = rand() % 3 + 1;
 		cell[i] = c;
 
 	}
@@ -172,9 +174,13 @@ void InitGameState(const SMap *map, SGameState *state)
 		state->cells[i] = map->cells[i].infos;
 
 	state->nbCells = NB_CELL;
+	state->points[0] = 0;
+	state->points[1] = 0;
+	state->diceStock[0] = 0;
+	state->diceStock[1] = 0;
 }
 
-void Confrontation(const STurn *turn, SGameState *state, /*--SGameTurn* sGameTurn, --*/int idPlayer)
+void Confrontation(const STurn *turn, SGameState *state, SGameTurn* sGameTurn, int idPlayer)
 {
 	int NbDicesFrom = state->cells[turn->cellFrom].nbDices;
 	int NbDicesTo = state->cells[turn->cellTo].nbDices;
@@ -187,13 +193,13 @@ void Confrontation(const STurn *turn, SGameState *state, /*--SGameTurn* sGameTur
 	for (int i = 0; i < NbDicesFrom; i++) {
 		scoreDes = (rand() % 6) + 1;
 		TotalFrom += scoreDes;
-		//--sGameTurn->dices[0][i] = scoreDes;
+		sGameTurn->dices[0][i] = scoreDes;
 	}
 
 	for (int i = 0; i < NbDicesTo; i++) {
 		scoreDes = (rand() % 6) + 1;
 		TotalTo += scoreDes;
-		//--sGameTurn->dices[1][i] = scoreDes;
+		sGameTurn->dices[1][i] = scoreDes;
 	}
 
 	if (TotalFrom > TotalTo)				// si l'attaquant a gagné
@@ -207,8 +213,8 @@ void Confrontation(const STurn *turn, SGameState *state, /*--SGameTurn* sGameTur
 	{
 		state->cells[turn->cellFrom].nbDices = 1;
 	}
-	//--sGameTurn->idPlayer = idPlayer;
-	//--sGameTurn->turn = *(turn);
+	sGameTurn->idPlayer = idPlayer;
+	sGameTurn->turn = *(turn);
 }
 
 int getNbTerritories(int IDPlayer, SGameState *state) {
@@ -233,14 +239,13 @@ bool isWin(int idPlayer, SGameState *state)
 }
 
 
-int getMaxConnexite(int IdPlayer, const SMap *map)
+int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 {
-
 	int color = 0;
 	std::vector<int> colorVector(NB_CELL, color);									// Initialisation du vector
-	for (int i = 0; i < NB_CELL; i++) 
+	for (int i = 0; i < NB_CELL; i++)
 	{
-		if (map->cells[i].infos.owner == IdPlayer)									// Le celulle doit être la sienne
+		if (state->cells[i].owner == IdPlayer)									// Le celulle doit être la sienne
 		{
 			if (colorVector.at(i) == 0)
 			{
@@ -265,7 +270,7 @@ int getMaxConnexite(int IdPlayer, const SMap *map)
 					}
 				}
 			}
-			
+
 		}
 	}
 
@@ -304,22 +309,42 @@ void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<in
 	}
 }
 
-void distributionDes(int idPlayer, int nbDes, const SMap *map)
+void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map)
 {
 	std::vector<unsigned int> TCellPerPlayer;
 	unsigned int cellPosition;
 
 	// TODO : Optimiser parce qu'on passe plusieurs fois dans toute la map pour tout les joueurs
 	// Faire une struct joueur avec tableau de cellule pour chaque joueur ?
-	for (auto i = 0; i < map->nbCells; i++) {
-		if (map->cells[i].infos.owner == idPlayer) {
-			TCellPerPlayer.push_back(map->cells[i].infos.id);
+	for (auto i = 0; i < state->nbCells; i++) {
+		if (state->cells[i].owner == idPlayer && state->cells[i].nbDices < 8) {
+			TCellPerPlayer.push_back(state->cells[i].id);
 		}
 	}
 
-	for (auto j = 0; j < nbDes; j++) {
-		cellPosition = rand() % TCellPerPlayer.size();				// Choisi une cellule parmis les cellules d'un joueur
-		if (map->cells[TCellPerPlayer[cellPosition]].infos.nbDices <= 8)
-			map->cells[TCellPerPlayer[cellPosition]].infos.nbDices++;	// Ajoute un dés sur cette cellule
+	for (auto j = 0; j < nbDes; j++) {	
+		if (!TCellPerPlayer.empty()) 
+		{
+			cellPosition = rand() % TCellPerPlayer.size();				// Choisi une cellule parmis les cellules d'un joueur
+			state->cells[TCellPerPlayer[cellPosition]].nbDices++;	// Ajoute un dés sur cette cellule dans le state
+			map->cells[TCellPerPlayer[cellPosition]].infos.nbDices++;	// Ajoute un dés sur cette cellule dans la map
+
+			if (state->cells[TCellPerPlayer[cellPosition]].nbDices >= 8)
+				TCellPerPlayer.erase(TCellPerPlayer.begin() + cellPosition);
+		}
+		else
+			state->diceStock[idPlayer]++;
+	}
+
+	while (!TCellPerPlayer.empty() && state->diceStock[idPlayer] > 0) 
+	{
+		cellPosition = rand() % TCellPerPlayer.size(); 
+		state->cells[TCellPerPlayer[cellPosition]].nbDices++;	// Ajoute un dés sur cette cellule dans le state
+		map->cells[TCellPerPlayer[cellPosition]].infos.nbDices++;	// Ajoute un dés sur cette cellule dans la map
+
+		if (state->cells[TCellPerPlayer[cellPosition]].nbDices >= 8)
+			TCellPerPlayer.erase(TCellPerPlayer.begin() + cellPosition);
+
+		state->diceStock[idPlayer]--;
 	}
 }

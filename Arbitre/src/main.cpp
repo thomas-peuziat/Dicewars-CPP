@@ -7,6 +7,8 @@
 #include "../../Commun/interface_gui.h"
 #include "fonctions.h"
 #include "generation.h"
+#include <thread>
+#include <chrono>
 
 #define GETFUNCTION(handler,name) \
 	if ((name = (p##name)GETPROC(hLib, #name)) == nullptr)\
@@ -27,6 +29,19 @@ void LoadMapPerso(Regions &regions, Map map) {
 		
 		regions.push_back(monVector);
 	}
+}
+
+void LoadMapTest(Regions &regions) {
+	regions.push_back({ {1,1}, {1,2} });
+	regions.push_back({ {2,1} });
+	regions.push_back({ {2,3}, {2,4}, {3,4} });
+	regions.push_back({ {4,5} });
+	regions.push_back({ {5,4}, {6,5} });
+	regions.push_back({ {6,6} });
+	regions.push_back({ {7,4} });
+	regions.push_back({ {3,1}, {3,2}, {3,3} });
+	regions.push_back({ {4,6}, {5,6} });
+	regions.push_back({ {4,7} });
 }
 
 
@@ -94,8 +109,8 @@ int main(int argc, char *argv[])
 	STurn turn;
 	void *ctx[nbPlayers];
 
-	//InitMap(&map);
-	//InitGameState(&map, &state);
+	InitMap(&map);
+	InitGameState(&map, &state);
 
 	
 
@@ -104,8 +119,8 @@ int main(int argc, char *argv[])
 	
 
 	Regions regions;							// vector de vector de pair, donc la grille, à relier à la génération de SMap
-	LoadDefaultMap(regions);
-
+	//LoadDefaultMap(regions);
+	LoadMapTest(regions);
 	SRegions *mapCells = ConvertMap(regions);	// Convert des std::vector< std::vector<std::pair<unsigned int, unsigned int>> > en SRegions*
 	ctxGUI = InitGUI(nbPlayers, mapCells);		
 	DeleteMap(mapCells);						// Après InitGUI
@@ -141,7 +156,7 @@ int main(int argc, char *argv[])
 		for (unsigned int j = 0; j < 2; ++j)
 			sGameTurn.dices[j][i] = 0;
 	
-	//SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
+	SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
 	
 	int i;
 	std::cin >> i;
@@ -150,20 +165,27 @@ int main(int argc, char *argv[])
 	int gameTurn = 1;
 	bool win = false;
 
+	idTurn++;
 	do {
 		// Pour chaque joueurs 
 		//mettre i à 1 si on veut tester que la 2eme stratégie
 		for (int i = 0; i < nbPlayers; i++) {
+			
 			fin = 0;
 			gameTurn = i;
 			// Tant que le joueur fait un coup valide ou que le joueur a fini son tour
 			do {
 				fin = tab_PlayTurn[i](gameTurn, ctx[i], &state, &turn);
+				
 				if (!fin) {
 					if (ValidAttack(&turn, &map, &state, i))								// Attaque valide
 					{
-						Confrontation(&turn, &state, /*--&sGameTurn, --*/i);
-						//--UpdateGameState(ctxGUI, ++idTurn, &sGameTurn, &state);
+						Confrontation(&turn, &state, &sGameTurn, i);
+						state.points[i] = getMaxConnexite(i, &map, &state);
+						UpdateGameState(ctxGUI, ++idTurn, &sGameTurn, &state);
+						/*int a;
+						std::cin >> a;*/
+						//std::this_thread::sleep_for(std::chrono::seconds(2));
 					}		
 					else {
 						gameTurn++;
@@ -175,25 +197,28 @@ int main(int argc, char *argv[])
 
 			if (gameTurn != i)																	// Si le tour du joueur a échoué, on retablit les paramètres
 				RetablirEtat(&map, &state);
-			else {																			// Sinon on valide les paramètres
-				ValiderEtat(&map, &state);
-				int ndDes = getMaxConnexite(i, &map);
-				distributionDes(i, ndDes, &map);
+			else {																			// Sinon on valide les paramètres	
+				ValiderEtat(&map, &state); 
+				int nbDes = getMaxConnexite(i, &map, &state);
+				std::cout << nbDes << std::endl;
+				distributionDes(i, nbDes, &state, &map);
+				SetGameState(ctxGUI, idTurn, &state);
 			}
 			if (win)
 				break;
 			
 		}
 	} while (!win);
-	
-
+	std::cout << "Nb tours " << idTurn << std::endl;
+	int a;
+	std::cin >> a;
 	EndGame(ctx[0], 1);
 
 	free(tab_PlayTurn);
 	free(tab_InitGame);
 	free(tab_EndGame);
 
-	//--UninitGUI(ctxGUI);
+	UninitGUI(ctxGUI);
 
 	CLOSELIB(hLib);
 
