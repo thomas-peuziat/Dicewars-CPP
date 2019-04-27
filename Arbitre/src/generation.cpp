@@ -236,6 +236,7 @@ bool CheckEndInit(Matrix & matrix, Map & map, int L, int C) {
 }
 
 void initialisationMap() {
+
 	srand((unsigned int)time(NULL));
 
 	int n = 4;
@@ -255,12 +256,20 @@ void initialisationMap() {
 	// Premier tour -> Création aléatoire des cellules de base
 	for (int i = 0; i < n; i++) {
 
-		int x = rand() % (x_borne_rd - 0) + 0;
-		int y = rand() % (y_borne_rd - 0) + 0;
-		std::cout << " Cell de base --> (x = " << x << ",y = " << y << ")" << std::endl;
 
 		bool check1 = false;
-		matrix[x][y] = 36;
+		while (!check1) {
+			int x = rand() % (x_borne_rd - 0) + 0;
+			int y = rand() % (y_borne_rd - 0) + 0;
+			std::cout << " Cell de base --> (x = " << x << ",y = " << y << ")" << std::endl;
+
+			if (matrix[x][y] == -1) {
+				check1 = true;
+				matrix[x][y] = i;
+				map[i].insert(std::make_pair(x, y));
+			}
+		}
+
 		// Changer valeur dans la Matrix
 		//while (!check1) {
 		//	if (matrix[y][x] == -1) {
@@ -270,46 +279,165 @@ void initialisationMap() {
 		//}
 
 		// Insérer les coordonnées dans la map à la clé "n° de territoire"
-		map[i].insert(std::make_pair(x, y));
+
 	}
 
 	afficherMap(map);
 
 
-	for (int k = 0; k < n; k++) {
-		int size_territory = map.find(k)->second.size();
-		std::set<Coordinates> territory_cells = map.find(k)->second;
 
-		std::cout << "size_territory = " << size_territory << std::endl;
-		int id_cell_rd = rand() % (size_territory - 0) + 0;
+	bool end;
+	do {
 
-		std::cout << "id_cell_rd = " << id_cell_rd << std::endl;
+		end = false;
+		for (int k = 0; k < n; k++) {
+			//Vérifier si le territoire n'est pas tout recouvert
+
+			std::set<Coordinates> territory_cells = map.find(k)->second;
+			std::cout << "bool already expand = " << already_expanded(map, matrix, k, L, C) << std::endl;
+			if (!already_expanded(map, matrix, k, L, C)) {
+				set<Coordinates> list_base;
+				set<Coordinates> list;
+				for (Coordinates coord : territory_cells) {
+					if (coord.second % 2 == 0) {
+						list = even_coordinates(coord, L, C, matrix);
+					}
+					else {
+						list = odd_coordinates(coord, L, C, matrix);
+					}
+					list_base.insert(list.begin(), list.end());
+				}
+
+				cout << "vide la liste_base ? " << list_base.empty() << endl;
+				cout << "Coordonnees list_base : ";
+				for (Coordinates coordin : list_base) {
+					cout << "(" << coordin.first << ", " << coordin.second << ")";
+				}
+				cout << endl;
+
+				//int size_territory = map.find(k)->second.size();
+				if (!list_base.empty()) {
+					int size_list_base = list_base.size();
+					int id_cell_rd = rand() % (size_list_base - 0) + 0;
+					cout << endl;
+					cout << "size_territory/id_cell_rd : " << size_list_base << " " << id_cell_rd << endl;
+					cout << endl;
+
+					set<Coordinates>::iterator it = list_base.begin();
+					cout << "-" << endl;
+					advance(it, id_cell_rd);
+					cout << "-" << endl;
+					Coordinates coord_a = *it;
+					cout << "-" << endl;
+					cout << "coord_a --> " << coord_a.first << ", " << coord_a.second << endl;
+					cout << "-" << endl;
+
+					matrix[coord_a.first][coord_a.second] = k;
+					map[k].insert(make_pair(coord_a.first, coord_a.second));
+				}
 
 
-		std::set<Coordinates>::iterator it = territory_cells.begin();
-		advance(it, id_cell_rd);
-		Coordinates coord_a = *it;
-		std::cout << "coord_a --> " << coord_a.first << ", " << coord_a.second << std::endl;
 
-		bool check = false;
-		while (!check) {
-			Coordinates c = pattern_treatment(coord_a, L, C, matrix);
-			std::cout << "coord_c --> " << c.first << ", " << c.second << std::endl;
-			if (!isIsolated(matrix, c, L, C)) {
-				check = true;
+				/*set<Coordinates>::iterator coord_a = next(list_base.begin(), 5);
+				cout << "coord_a --> " << coord_a.first << ", " << coord_a.second << endl;*/
+
+
+
 			}
+			else {
+				cout << endl;
+				cout << "------------ C'EST LA FIN ------------" << endl;
+				cout << endl;
+				end = false;
+			}
+			// pour chaque id_territoire :
+				// obtenir la liste valeur de la map -- set<Coordinates>
+				// créer liste de Corrdinates avec possibilité de mvt
+				// pour chaque <Coordinates> :
+					// ajouter la Coordinates à la set<Coordinates>
+
+			// si new Liste set<Coordinates> n'est pas vide
+				// on choisit une corrdinate
+				// et on expand
+
+			//int size_territory = map.find(k)->second.size();
+
+
+	/*		cout << " ID_TERRITORY = " << k << endl;
+			cout << " ---------------- " << endl;
+			int id_cell_rd = rand() % (size_territory - 0) + 0;*/
+
+			//	cout << "id_cell_rd = " << id_cell_rd << endl;
+			//	
+
+		/*	set<Coordinates>::iterator it = territory_cells.begin();
+			advance(it, id_cell_rd);
+			Coordinates coord_a = *it;
+			cout << "coord_a --> " << coord_a.first << ", " << coord_a.second << endl;*/
+
+
+			bool check = false;
+			//Coordinates coord_b = make_pair(9,4);
+			//matrix()
+			//cout << isIsolated(matrix, coord_a, L, C) << endl;
+
+
+			cout << endl;
+			cout << endl;
+
+
+			// si on peut encore trouver des voisins possibles.
+			//if (!already_expanded(map,matrix,k,L,C)) {
+			//	while (!check) {
+			//		cout << "Entrée dans la boucle" << endl;
+			//		cout << "!isIsolated -->" << (!isIsolated(matrix, coord_a, L, C))  << endl;
+			//		if (!isIsolated(matrix, coord_a, L, C)) {
+			//			Coordinates c = pattern_treatment(coord_a, L, C, matrix);
+			//			cout << "coord_c --> " << c.first << ", " << c.second << endl;
+			//			check = true;
+			//			coord_a = make_pair(c.first, c.second);
+			//		}
+			//	}
+
+			//	matrix[coord_a.first][coord_a.second] = k;
+			//	map[k].insert(make_pair(coord_a.first, coord_a.second));
+			//}
+
+
+
+			//for (Coordinates coord : map.find(k)->second) {
+			//	set<Coordinates> list;
+			//	if (coord.first % 2 == 0) {
+			//		list = even_coordinates(coord, L, C);
+			//	}
+			//	else {
+			//		list = odd_coordinates(coord, L, C);
+			//	}
+
+			//	if (list.empty()) {
+			//		end = false;
+			//	}
+
+			//	//	cout << endl;
+
+
+			//	//	//cout << "(" << coord_a.first << ":" << coord_a.second << ")" << endl;
+			//	//	//
+			//}
+
+
+
+			afficherMap(map);
+
+			displayMatrix(L, C, matrix);
 		}
+		end = CheckEndInit(matrix, map, L, C);
 
-		std::cout << std::endl;
+		afficherMap(map);
 
+		displayMatrix(L, C, matrix);
 
-		//std::cout << "(" << coord_a.first << ":" << coord_a.second << ")" << std::endl;
-		//
-		//matrix[coord_a.second][coord_a.first] = k;
-		//map[k].insert(std::make_pair(coord_a.first, coord_a.second));
-	}
-	afficherMap(map);
-
-	displayMatrix(L, C, matrix);
+		cout << end << endl;
+	} while (!end);
 
 }
