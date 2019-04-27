@@ -1,48 +1,59 @@
 #include "generation.h"
 
+typedef std::pair<int, int> Coordinates;
+typedef std::vector<std::vector<int>> Matrix;
+typedef std::map<int, std::set<Coordinates>> Map;
+
 unsigned int setNumberTerritories(unsigned int nb_players) {
 	int a = 30 + rand() % (10 - 0) + 0;
 	std::cout << "v1 = " << a << std::endl;
 
 	int mod = a % nb_players;
-	std::cout << "mod = " << a << "%" << nb_players << "=" << mod << std::endl;
+	cout << "mod = " << a << "%" << nb_players << "=" << mod << endl;
 
 	int final_nb = a;
 
 	if (mod != 0) {
 		final_nb = a + (nb_players - mod);
-		std::cout << "final_db = " << a << "+" << (nb_players - mod) << "=" << final_nb << std::endl;
+		cout << "final_db = " << a << "+" << (nb_players - mod) << "=" << final_nb << endl;
 	}
 
 	return final_nb;
 }
 
-std::set<Coordinates> odd_coordinates(const Coordinates &coord, int L, int C) {
+
+
+
+std::set<Coordinates> odd_coordinates(const Coordinates &coord, int L, int C, const Matrix & matrix) {
 	std::set<Coordinates> list;
-	if (coord.second - 1 >= 0) {
-		list.insert(std::make_pair(coord.first, coord.second - 1));
+	int x = coord.first;
+	int y = coord.second;
+
+	if (y - 1 >= 0 && matrix[x][y - 1] == -1) {
+		list.insert(std::make_pair(x, y - 1));
 	}
 
-	if (coord.first + 1 < C && coord.second - 1 >= 0) {
-		list.insert(std::make_pair(coord.first + 1, coord.second - 1));
+	if (x + 1 < C && y - 1 >= 0 && matrix[x + 1][y - 1] == -1) {
+		list.insert(std::make_pair(x + 1, y - 1));
 	}
 
-	if (coord.first + 1 < C) {
-		list.insert(std::make_pair(coord.first + 1, coord.second));
+	if (x + 1 < C && matrix[x + 1][y] == -1) {
+		list.insert(std::make_pair(x + 1, y));
 	}
 
-	if (coord.first + 1 < C && coord.second + 1 < L) {
-		list.insert(std::make_pair(coord.first + 1, coord.second + 1));
+	if (x + 1 < C && y + 1 < L && matrix[x + 1][y + 1] == -1) {
+		list.insert(std::make_pair(x + 1, y + 1));
 	}
 
-	if (coord.second + 1 < L) {
-		list.insert(std::make_pair(coord.first, coord.second + 1));
+	if (y + 1 < L && matrix[x][y + 1] == -1) {
+		list.insert(std::make_pair(x, y + 1));
 	}
 
-	if (coord.first - 1 >= 0) {
-		list.insert(std::make_pair(coord.first - 1, coord.second));
+	if (x - 1 >= 0 && matrix[x - 1][y] == -1) {
+		list.insert(std::make_pair(x - 1, y));
 	}
 
+	std::cout << "odd_coordinates : " << std::endl;
 	for (auto it = list.begin(); it != list.end(); it++) {
 		std::cout << "(" << it->first << " " << it->second << ")";
 	}
@@ -52,56 +63,66 @@ std::set<Coordinates> odd_coordinates(const Coordinates &coord, int L, int C) {
 
 }
 
-
-std::set<Coordinates> even_coordinates(const Coordinates &coord, int L, int C) {
+std::set<Coordinates> even_coordinates(const Coordinates &coord, int L, int C, const Matrix & matrix) {
 	std::set<Coordinates> list;
-	if (coord.first - 1 >= 0 && coord.second - 1 >= 0) {
-		list.insert(std::make_pair(coord.first - 1, coord.second - 1));
+	int x = coord.first;
+	int y = coord.second;
+
+	if (x - 1 >= 0 && y - 1 >= 0 && matrix[x - 1][y - 1] == -1) {
+		list.insert(std::make_pair(x - 1, y - 1));
 	}
 
-	if (coord.second - 1 >= 0) {
-		list.insert(std::make_pair(coord.first, coord.second - 1));
+	if (y - 1 >= 0 && matrix[x][y - 1] == -1) {
+		list.insert(std::make_pair(x, y - 1));
 	}
 
-	if (coord.first + 1 < C) {
-		list.insert(std::make_pair(coord.first + 1, coord.second));
+	if (x + 1 < C && matrix[x + 1][y] == -1) {
+		list.insert(std::make_pair(x + 1, y));
 	}
 
-	if (coord.second + 1 < L) {
-		list.insert(std::make_pair(coord.first, coord.second + 1));
+	if (y + 1 < L && matrix[x][y + 1] == -1) {
+		list.insert(std::make_pair(x, y + 1));
 	}
 
-	if (coord.first - 1 >= 0 && coord.second + 1 < L) {
-		list.insert(std::make_pair(coord.first - 1, coord.second + 1));
+	if (x - 1 >= 0 && y + 1 < L && matrix[x - 1][y + 1] == -1) {
+		list.insert(std::make_pair(x - 1, y + 1));
 	}
 
-	if (coord.first - 1 >= 0) {
-		list.insert(std::make_pair(coord.first - 1, coord.second));
+	if (x - 1 >= 0 && matrix[x - 1][y] == -1) {
+		list.insert(std::make_pair(x - 1, y));
 	}
 
+	std::cout << "(" << x << "," << y << ")" << "even_coordinates : ";
 	for (auto it = list.begin(); it != list.end(); it++) {
-		std::cout << "(" << it->first << " " << it->second << ")";
+		std::cout << "(" << it->first << " " << it->second << "), ";
 	}
 	std::cout << std::endl;
 
 	return list;
 }
 
-Coordinates pattern_treatment(const Coordinates &coord, int L, int C, const std::vector<std::vector<int>> &matrix) {
+Coordinates pattern_treatment(const Coordinates &coord, int L, int C, const Matrix &matrix) {
 	std::set<Coordinates> list;
-	if (coord.first % 2 == 0) {
-		list = even_coordinates(coord, L, C);
+	if (coord.second % 2 == 0) {
+		list = even_coordinates(coord, L, C, matrix);
 	}
 	else {
-		list = odd_coordinates(coord, L, C);
+		list = odd_coordinates(coord, L, C, matrix);
 	}
 	int size = list.size();
-	int rd_id = rand() % ((size - 1) - 0) + 0;
+	std::cout << size << std::endl;
+	if (list.empty()) {
+		std::cout << "La liste est vide !!" << std::endl;
+	}
+
+	int rd_id = rand() % list.size();
+	std::cout << "rd_id = " << rd_id << std::endl;
+
 
 	auto first = list.begin(); // get iterator to 1st element
 
-	advance(first, rd_id + 1);
-	std::cout << "random values = " << rd_id << "/" << size << std::endl;
+	advance(first, rd_id);
+	cout << "random values = " << rd_id << "/" << size << endl;
 
 	return *first;
 
@@ -110,7 +131,13 @@ Coordinates pattern_treatment(const Coordinates &coord, int L, int C, const std:
 
 void displayMatrix(const int L, const int C, const Matrix &matrix) {
 	for (int i = 0; i < L; i++) {
-		std::cout << "[ ";
+		if (i % 2 == 0) {
+			std::cout << "[ ";
+		}
+		else {
+			std::cout << "[  ";
+		}
+
 		for (int j = 0; j < C; j++) {
 			std::cout << " " << matrix[j][i];
 		}
@@ -131,27 +158,22 @@ bool isEven(int a) {
 bool isIsolated(const Matrix &mat, Coordinates coord, int L, int C) {
 	std::set<Coordinates> neighbors;
 	bool res = true;
-	if (isEven(coord.first)) {
-		neighbors = even_coordinates(coord, L, C);
+	if (isEven(coord.second)) {
+		neighbors = even_coordinates(coord, L, C, mat);
 	}
 	else {
-		neighbors = odd_coordinates(coord, L, C);
+		neighbors = odd_coordinates(coord, L, C, mat);
 	}
-
-	std::cout << "isIsolated --> ";
+	std::cout << "issEmpty" << neighbors.empty() << std::endl;
 	for (Coordinates neigh : neighbors) {
 		int x = neigh.first;
-		std::cout << "-";
 		int y = neigh.second;
-		std::cout << "-";
 
-		std::cout << "(x" << x << ",y" << y << ")";
-		std::cout << "(" << mat[x][y] << ")";
-		std::cout << "-";
-		if (mat[y][x] == -1) {
+		std::cout << "(" << x << "," << y << ":" << mat[x][y] << ") ";
+
+		if (mat[x][y] == -1) {
 			res = false;
 		}
-		std::cout << "(" << neigh.first << ", " << neigh.second << ")";
 	}
 	std::cout << std::endl;
 	std::cout << std::endl;
@@ -159,7 +181,7 @@ bool isIsolated(const Matrix &mat, Coordinates coord, int L, int C) {
 	return res;
 }
 
-void afficherMap(const Map &m){
+void afficherMap(const Map &m) {
 	for (Map::const_iterator it = m.begin(); it != m.end(); ++it) {
 		std::cout << "key --> " << it->first << std::endl;
 		for (Coordinates coord : it->second) {
@@ -170,6 +192,48 @@ void afficherMap(const Map &m){
 	}
 }
 
+
+bool already_expanded(Map & map, Matrix & matrix, int id_territory, int L, int C) {
+	bool res = true;
+	for (Coordinates coord : map.find(id_territory)->second) {
+		std::set<Coordinates> list;
+		if (coord.second % 2 == 0) {
+			list = even_coordinates(coord, L, C, matrix);
+		}
+		else {
+			list = odd_coordinates(coord, L, C, matrix);
+		}
+
+		if (!list.empty()) {
+			res = false;
+		}
+	}
+	return res;
+}
+
+bool CheckEndInit(Matrix & matrix, Map & map, int L, int C) {
+	bool res = true;
+	int size = map.size();
+	for (int i = 0; i < size; i++) {
+		std::set<Coordinates> territory_cells = map.find(i)->second;
+
+		std::set<Coordinates> list_base;
+		std::set<Coordinates> list;
+		for (Coordinates coord : territory_cells) {
+			if (coord.second % 2 == 0) {
+				list = even_coordinates(coord, L, C, matrix);
+			}
+			else {
+				list = odd_coordinates(coord, L, C, matrix);
+			}
+			list_base.insert(list.begin(), list.end());
+		}
+		if (!list_base.empty()) {
+			res = false;
+		}
+	}
+	return res;
+}
 
 void initialisationMap() {
 	srand((unsigned int)time(NULL));
