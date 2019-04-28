@@ -4,6 +4,8 @@
 #include <time.h>
 
 #include "Dijkstra.h"
+#include "CalculConnexite.h"
+
 
 #ifdef _MSC_VER
 #pragma warning(disable:4996)	// disable _CRT_SECURE_NO_WARNINGS
@@ -16,7 +18,7 @@ struct SContext
 	int nbPlayers;
 	SPlayerInfo* infos;
 	const SMap* map;
-	unsigned int gameTurn;//vérifier si toujours égal au coup précédent
+	//unsigned int gameTurn;//vérifier si toujours égal au coup précédent
 };
 
 API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *map, SPlayerInfo *info)
@@ -45,7 +47,8 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 	std::cout << "PlayTurn DIJKSTRA" << std::endl;
 	SContext* contexte = static_cast<SContext*>(ctx);
 	SCell *territories = static_cast<SContext*>(ctx)->map->cells;
-
+	const SMap *map = static_cast<SContext*>(ctx)->map;
+	const int nbCells = map->nbCells;
 
 	//si le coup précédent est valide
 	if (gameTurn) {
@@ -57,6 +60,23 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 
 		std::cout << "Fin initDijkstra" << std::endl;
 
+		//getMaxConnexite
+		//trouver les territoires les plus proches en partant de chaque endroit de la plus grande composante connexe => map??
+		
+		std::vector<int> vConnexite = calculateConnexite(0, map, state, nbCells);
+		
+		for (const int& it : vConnexite) {
+			std::cout << it << std::endl;
+		}
+		std::cout << "FIN vConnexite" << std::endl;
+
+		std::map<unsigned int, unsigned int> nbColor = getMapWithColors(vConnexite);
+		for (auto &it : nbColor) {
+			std::cout << "couleur : " << it.first << " occurence : " << it.second << std::endl;
+		}
+		
+		int maxiConnexite = getMaxConnexite(nbColor);
+		std::cout << "MAX Connexite : " << maxiConnexite << std::endl;
 
 		/*
 			Pour tous nos territoires (ou que la moitié puisqu'on va essayer de tous les rejoindre ? a vérifier)
