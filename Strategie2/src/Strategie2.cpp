@@ -23,7 +23,7 @@ API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *ma
 	std::cout << "InitGame" << std::endl;
 	SContext *ctx = new SContext();
 
-	strcpy(info->name, "Stratégie 2");
+	strcpy(info->name, "Strategie 2");
 	strcpy(info->members[0], "COUTY Killian");
 	strcpy(info->members[1], "DANIEL Florian");
 	strcpy(info->members[2], "GAUDUCHEAU Clement");
@@ -41,14 +41,15 @@ API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *ma
 // 1 coup terminé
 API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *state, STurn *turn)
 {
-	std::cout << "PlayTurn DIJKSTRA" << std::endl;
+	//std::cout << "PlayTurn Strategie 2" << std::endl;
 	SContext* contexte = static_cast<SContext*>(ctx);
 	SCell *territories = static_cast<SContext*>(ctx)->map->cells;
 
-	int cellFrom = 1;
+	int cellFrom = -1;
 	int cellTo = -1;
-	int diffDes = 0;
-	int diffDesMax = diffDes;
+	int diffDes = -1;
+	int diffDesMax = -1;
+
 	SCellInfo myCell;
 	SCellInfo neighborCell;
 
@@ -56,18 +57,20 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 	{
 
 		for (int i = 0; i < contexte->map->nbCells; i++) {
-			if (state->cells[i].id == contexte->id) {
+			if (state->cells[i].owner == contexte->id) {
 				// Si la cellule est celle du joueur
 				myCell = state->cells[i];
 
 				for (int j = 0; j < territories[myCell.id].nbNeighbors; j++) {
 					// Pour chaque voisin de la celulle en cours
-					if (territories[myCell.id].neighbors[j]->infos.id != contexte->id) {
+					
+					int neigId = territories[myCell.id].neighbors[j]->infos.id;
+					if (state->cells[neigId].owner != (contexte->id)) {
 						// La cellule n'est pas au joueur
-						neighborCell = state->cells[territories[myCell.id].neighbors[j]->infos.id];
+						neighborCell = state->cells[neigId];
 						diffDes = myCell.nbDices - neighborCell.nbDices;
 
-						if (diffDes > 1 && diffDes > diffDesMax) {
+						if (diffDes >= 0 && diffDes >= diffDesMax) {
 							cellFrom = myCell.id;
 							cellTo = neighborCell.id;
 							diffDesMax = diffDes;
@@ -83,6 +86,9 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 			turn->cellTo = cellTo;
 			return 0;
 		}
+		else {
+			return 1;
+		}
 	}
 
 	return 1;
@@ -91,4 +97,5 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 API_EXPORT void EndGame(void *ctx, unsigned int idWinner)
 {
 	std::cout << "EndGame" << std::endl;
+	delete ctx;
 }

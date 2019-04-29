@@ -48,7 +48,7 @@ void LoadMapTest(Regions &regions) {
 int main(int argc, char *argv[])
 {
 	srand(time(NULL));
-	const int nbPlayers = 3;
+	const int nbPlayers = 2;
 	if (argc < 2)
 	{
 		std::cerr << "Usage: " << argv[0] << " libfile" << std::endl;
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 	for (unsigned int idxStrat = 0; idxStrat < nbPlayers; idxStrat++)
 	{
 		
-		//player[idxStrat].name[0] = '\0';
+		player[idxStrat].name[0] = '\0';
 
 		for (unsigned int i = 0; i < NbMembers; ++i) {
 			player[idxStrat].members[i][0] = '\0';
@@ -182,12 +182,12 @@ int main(int argc, char *argv[])
 					if (ValidAttack(&turn, &map, &state, i))								// Attaque valide
 					{
 						Confrontation(&turn, &state, &sGameTurn, i);
-						state.points[i] = getMaxConnexite(i, &map, &state);
+						updatePoints(nbPlayers, &state, &map);
 						UpdateGameState(ctxGUI, ++idTurn, &sGameTurn, &state);
 						
 						/*int a;
 						std::cin >> a;*/
-						//std::this_thread::sleep_for(std::chrono::seconds(2));
+						std::this_thread::sleep_for(std::chrono::seconds(2));
 					}		
 					else {
 						gameTurn++;
@@ -200,8 +200,9 @@ int main(int argc, char *argv[])
 			if (gameTurn != i)																	// Si le tour du joueur a échoué, on retablit les paramètres
 				RetablirEtat(&map, &state);
 			else {																			// Sinon on valide les paramètres	
-				ValiderEtat(&map, &state); 
-				int nbDes = getMaxConnexite(i, &map, &state);
+				ValiderEtat(&map, &state);
+				updatePoints(nbPlayers, &state, &map);
+				int nbDes = state.points[i];
 				std::cout << nbDes << std::endl;
 				distributionDes(i, nbDes, &state, &map);
 				SetGameState(ctxGUI, idTurn, &state);
