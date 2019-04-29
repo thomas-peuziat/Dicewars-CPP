@@ -2,7 +2,7 @@
 
 
 //idCellDepart => id de la cellue pour laquelle on cherche le plus court chemin
-void initDijkstra(const SMap *map, const int nbCells, int idCellDepart) {
+int initDijkstra(const SMap *map, const int nbCells, int idCellDepart, int idCellArrivee) {
 
 	// les index correspondent aux ids des cellules
 	std::vector<int> distance = {}; //tableau des distances entre la cellule de départ et une cellule 'i'
@@ -33,7 +33,8 @@ void initDijkstra(const SMap *map, const int nbCells, int idCellDepart) {
 	
 		
 	//pour afficher le parcours inverse à suivre
-	//Affiche_Parcours_Min(distance, predecesseurs, idCellDepart, 9, map);
+	//Affiche_Parcours_Min(distance, predecesseurs, idCellDepart, idCellArrivee, map);
+	return distance[idCellArrivee];
 }
 
 void iterationDijkstra(const SMap* map, int nbCells, std::vector<int> &distance, std::vector<int> &predecesseurs, int idCellDepart, std::vector<bool> &sommetDijkstra)

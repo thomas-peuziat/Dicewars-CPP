@@ -52,17 +52,18 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 
 	//si le coup précédent est valide
 	if (gameTurn) {
-		int cellFrom = 1, cellTo = 1;
+		//int cellFrom = 1, cellTo = 1;
 		
 		//state->nbCells donne le nombre de cell dans la map
-		std::cout << "Appel InitDijkstra" << std::endl;
-		initDijkstra(contexte->map, state->nbCells, 0);
+		//std::cout << "Appel InitDijkstra" << std::endl;
+		//initDijkstra(contexte->map, state->nbCells, 0);
 
-		std::cout << "Fin initDijkstra" << std::endl;
+		//std::cout << "Fin initDijkstra" << std::endl;
 
 		//getMaxConnexite
 		//trouver les territoires les plus proches en partant de chaque endroit de la plus grande composante connexe => map??
 		
+		//l'indice correspond à l'id - la valeur correspond à sa composante connexe
 		std::vector<int> vConnexite = calculateConnexite(0, map, state, nbCells);
 		
 		for (const int& it : vConnexite) {
@@ -70,13 +71,172 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 		}
 		std::cout << "FIN vConnexite" << std::endl;
 
+		//map contenant le num de la composante en clé et le nombre d'occurences en valeur
 		std::map<unsigned int, unsigned int> nbColor = getMapWithColors(vConnexite);
-		for (auto &it : nbColor) {
-			std::cout << "couleur : " << it.first << " occurence : " << it.second << std::endl;
+		//for (auto &it : nbColor) {
+		//	std::cout << "couleur : " << it.first << " occurence : " << it.second << std::endl;
+		//}
+		
+		//nombre maximal de territoire dans une seule composante connexe
+		int maxiConnexite = getMaxConnexite(nbColor);
+		//std::cout << "MAX Connexite : " << maxiConnexite << std::endl;
+
+		//correspond à la couleur contenant le maximum de territoire dans une seule composante connexe
+		int colorToFind = -1;
+		for (auto &it : nbColor)
+		{
+			if (it.second == maxiConnexite)
+				colorToFind = it.first;
+		}
+
+		std::vector<int> vIndexeCellFrom; // id des cellules que l'on possède faisant partie de la plus grande composante connexe - potentielle attaquante
+		std::vector<int> vecTMP;
+		
+		std::map<unsigned int, std::vector<int>> cellToJoin; //clé=la couleur ; valeur= vector d'id de cellules
+
+		int indexe = 0;
+		for (const int& it : vConnexite) {
+			
+			if (it == colorToFind) {
+				vIndexeCellFrom.push_back(indexe);
+			}
+			else {
+				if (it != 0) { //on ne s'occupe pas des cellules qui ne nous appartiennent pas
+					auto search = cellToJoin.find(it);
+					if (search == cellToJoin.end()) {
+						cellToJoin.insert(std::pair<int, std::vector<int> >(it, std::vector<int>()));
+						cellToJoin[it].push_back(indexe);
+					}
+					else {
+						cellToJoin[it].push_back(indexe);
+					}
+
+				}
+			}
+			indexe++;
+		}
+
+		std::cout << "CELL FROM" << std::endl;
+		for (const int& it : vIndexeCellFrom) {
+			std::cout << it << std::endl;
+		}
+		std::cout << "CELL TO JOIN" << std::endl;
+		for (auto it : cellToJoin) {
+			std::cout << it.first << "--> {";
+
+			for (int i = 0; i < it.second.size(); i++) {
+				std::cout << it.second[i] << " - ";
+			}
+			std::cout << "}" << std::endl;
+
 		}
 		
-		int maxiConnexite = getMaxConnexite(nbColor);
-		std::cout << "MAX Connexite : " << maxiConnexite << std::endl;
+
+		//construction d'une structure repertoriant les cellules attaquantes, les cellules visées et la distance les séparant
+
+
+		std::map<unsigned int, std::map<int,int>> mFromToDist;
+		//clé=cellule attaquante ; valeur= map [avec clé=id de cellules visées et valeur=distance jusqu'a une cellule d'arrivée]
+
+
+		//utilisé pour les tests et dans le cas spécifique ou la distance minimale n'apparait qu'une seule fois
+		/*
+			Exemple :
+			distance entre 2 cell --> dep : 0 - Arr : 6 => 7
+			distance entre 2 cell --> dep : 0 - Arr : 8 => 4
+			distance entre 2 cell --> dep : 1 - Arr : 6 => 10
+			distance entre 2 cell --> dep : 1 - Arr : 8 => 7
+			distance entre 2 cell --> dep : 7 - Arr : 6 => 7
+			distance entre 2 cell --> dep : 7 - Arr : 8 => 4
+
+			Ici, on peut attaquer la cellule 8 depuis la cellule 0 ou 7 mais on veut toujours avoir le plus de chance donc il nous faut savoir a quel moment on a le plus de dés pour y parvenir
+		*/
+		int distanceMinimale = INT_MAX;
+		int cellToATKWithMiniDistance = -1;
+		int cellFrom = -1;
+		int nbApparition = 1; //Calcul le nombre d'apparition de la distance minimale -> pour essayer d'optimiser l'algo et éviter les boucles inutiles
+
+		
+
+
+
+
+		for (const int& it : vIndexeCellFrom) {
+			//ajout de la cellule attaquante
+			int cellDepart = it;
+			mFromToDist.insert({ cellDepart,std::map<int,int>() });
+			for (auto iteratorOnCellToJoin : cellToJoin) {
+				//pour toutes les cellules que l'on peut attaquer
+				for (int i = 0; i < iteratorOnCellToJoin.second.size(); i++) {
+					int cellToATK = iteratorOnCellToJoin.second[i];
+					//calcul de la distance qui les sépare
+					int distanceBetweenCell = initDijkstra(map, nbCells,cellDepart, cellToATK);
+					std::cout << "distance entre 2 cell --> dep : " << cellDepart << " - Arr : " << cellToATK << " => " << distanceBetweenCell << std::endl;
+					mFromToDist[cellDepart].insert({ cellToATK, distanceBetweenCell });
+
+					if (distanceMinimale > distanceBetweenCell) { //récupère quelle cellule attaque laquelle avec quelle distance
+						distanceMinimale = distanceBetweenCell;
+						cellToATKWithMiniDistance = cellToATK;
+						cellFrom = cellDepart;
+						std::cout << "REINIT nbApparition" << std::endl;
+						nbApparition = 1; // la distance mini a changé on réinitialise le compteur
+					}
+					else {
+						if (distanceMinimale == distanceBetweenCell) {
+							std::cout << "INCREMENTE nbApparition" << std::endl;
+							nbApparition++;
+						}
+					}
+				}
+			}
+		}
+
+		/*
+			si nbApparition est supérieur à 1, cela veut dire qu'il nous faut construire les vector contenant toutes les pairs de cellules {ATK, visées}
+			afin de décider en fonction du nombre de dés
+		*/
+
+		//Si le cas spécifique se présente, on peut utiliser des vector (les distances seront toutes les mêmes donc pas besoin de les stocker)
+		if (nbApparition > 1) {
+			std::vector<std::pair<int, int>> vecCellAtkDef;
+
+			for (auto itMap : mFromToDist) {
+				itMap.first;
+				for (auto itMapInterne : itMap.second) {
+					itMapInterne.first;
+					if (distanceMinimale == itMapInterne.second) {
+						vecCellAtkDef.push_back({ itMap.first, itMapInterne.first });//ajout de la cellule attaquante et celle visée
+					}
+				}
+			}
+
+			int cellATKWithMaxiDices = -1;
+			int cellDEFWithMaxiDices = -1;
+
+			int maxiDice = -1;
+			for (auto itVec : vecCellAtkDef) {
+				if (map->cells[itVec.first].infos.nbDices > maxiDice) {
+					maxiDice = map->cells[itVec.first].infos.nbDices;
+					cellATKWithMaxiDices = itVec.first;
+					cellDEFWithMaxiDices = itVec.second;
+				}
+			}
+			std::cout << std::endl << std::endl;
+			std::cout << "cellDep => " << cellATKWithMaxiDices << " cellArr => " << cellDEFWithMaxiDices << " nbDice => " << maxiDice << std::endl;
+		}
+		else { //si 1 seule apparition
+			/*turn->cellFrom = cellFrom;
+			turn->cellTo = cellToATKWithMiniDistance;*/
+		}
+
+		//if (cellToATKWithMiniDistance!=-1){
+		//	std::cout << std::endl << std::endl;
+		//	std::cout << "cellDepart? => " << cellFrom << "cellArrivee? => " << cellToATKWithMiniDistance << " distance ? => " << distanceMinimale << std::endl;
+		//}
+	
+
+
+		//attaque avec la plus grande différence de dés
 
 		/*
 			Pour tous nos territoires (ou que la moitié puisqu'on va essayer de tous les rejoindre ? a vérifier)
@@ -89,6 +249,8 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 					CAR - 2 dés contre 1 : environ 74% de chance de gagner
 						- 3 dés contre 2 : environ 69% de chance de gagner
 		*/
+
+		//NB : Penser au cas où il ne reste que 2 joueurs avec chacun 1 et 1 seule composante connexe => dijkstra ne sert a rien et il faut quand meme attaquer
 	}
 	return 0;
 }
