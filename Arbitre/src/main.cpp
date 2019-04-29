@@ -48,7 +48,7 @@ void LoadMapTest(Regions &regions) {
 int main(int argc, char *argv[])
 {
 	srand(time(NULL));
-	const int nbPlayers = 2;
+	const int nbPlayers = 3;
 	if (argc < 2)
 	{
 		std::cerr << "Usage: " << argv[0] << " libfile" << std::endl;
@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
 
 	std::cout << "Argument de la commande : '" << argv[1] << "'" << std::endl;
 	std::cout << "Argument de la commande : '" << argv[2] << "'" << std::endl;
+	std::cout << "Argument de la commande : '" << argv[3] << "'" << std::endl;
 
 	pInitGame InitGame;
 	pPlayTurn PlayTurn;
