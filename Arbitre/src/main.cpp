@@ -183,6 +183,7 @@ int main(int argc, char *argv[])
 						Confrontation(&turn, &state, &sGameTurn, i);
 						state.points[i] = getMaxConnexite(i, &map, &state);
 						UpdateGameState(ctxGUI, ++idTurn, &sGameTurn, &state);
+						
 						/*int a;
 						std::cin >> a;*/
 						//std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -209,10 +210,13 @@ int main(int argc, char *argv[])
 			
 		}
 	} while (!win);
+
 	std::cout << "Nb tours " << idTurn << std::endl;
 	int a;
 	std::cin >> a;
-	EndGame(ctx[0], 1);
+
+	for (unsigned int i = 0; i < nbPlayers; ++i)
+		EndGame(ctx[i], 1);
 
 	free(tab_PlayTurn);
 	free(tab_InitGame);
