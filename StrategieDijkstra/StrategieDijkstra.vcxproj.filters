@@ -24,12 +24,18 @@
     <ClInclude Include="..\Commun\interface.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="src\CalculConnexite.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Dijkstra.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="src\strategieDijkstra.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CalculConnexite.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

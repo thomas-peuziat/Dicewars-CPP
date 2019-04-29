@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 	HLIB hLib;
 	for (int i = 0; i < nbPlayers; i++)
 	{
-		if ((hLib = LOADLIB(argv[1])) == nullptr)
+		if ((hLib = LOADLIB(argv[i + 1])) == nullptr)
 		{
 			std::cerr << "Impossible de charger la librairie '" << argv[i + 1] << "'" << std::endl;
 			return(-1);
