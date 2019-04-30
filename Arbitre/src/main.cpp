@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
 						
 						/*int a;
 						std::cin >> a;*/
-						//std::this_thread::sleep_for(std::chrono::seconds(2));
+						std::this_thread::sleep_for(std::chrono::seconds(3));
 					}		
 					else {
 						gameTurn++;
@@ -205,8 +205,8 @@ int main(int argc, char *argv[])
 				int nbDes = state.points[i];
 				std::cout << nbDes << std::endl;
 				distributionDes(i, nbDes, &state, &map);
-				SetGameState(ctxGUI, idTurn, &state);
 			}
+			SetGameState(ctxGUI, idTurn, &state);
 			if (win)
 				break;
 			
