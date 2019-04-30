@@ -109,9 +109,10 @@ int main(int argc, char *argv[])
 	SPlayerInfo player[nbPlayers];
 	STurn turn;
 	void *ctx[nbPlayers];
-
-	InitMap(&map);
-	InitGameState(&map, &state);
+	std::map<int, std::set<Coordinates>> maMap;
+	maMap = initialisationMap();
+	//InitMap(&map);
+	//InitGameState(&map, &state);
 
 	
 
@@ -121,12 +122,14 @@ int main(int argc, char *argv[])
 
 	Regions regions;							// vector de vector de pair, donc la grille, à relier à la génération de SMap
 	//LoadDefaultMap(regions);
-	LoadMapTest(regions);
+	//LoadMapTest(regions);
+	LoadMapPerso(regions, maMap);
 	SRegions *mapCells = ConvertMap(regions);	// Convert des std::vector< std::vector<std::pair<unsigned int, unsigned int>> > en SRegions*
 	ctxGUI = InitGUI(nbPlayers, mapCells);		
 	DeleteMap(mapCells);						// Après InitGUI
 	
-	
+	int b;
+	std::cin >> b;
 
 	
 
@@ -187,7 +190,7 @@ int main(int argc, char *argv[])
 						
 						/*int a;
 						std::cin >> a;*/
-						std::this_thread::sleep_for(std::chrono::seconds(2));
+						//std::this_thread::sleep_for(std::chrono::seconds(2));
 					}		
 					else {
 						gameTurn++;
