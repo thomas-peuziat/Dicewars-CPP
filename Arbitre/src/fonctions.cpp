@@ -23,7 +23,7 @@ void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nb
 
 
 	// Affichage Matrix	
-	displayMatrix(nbLignes, nbColonnes, matrix);
+	//displayMatrix(nbLignes, nbColonnes, matrix);
 
 	// Calcul des bornes pour le random_
 	int c_borne = nbColonnes - 1;
@@ -71,18 +71,13 @@ void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nb
 				std::set<Coordinates> list_base;
 				std::set<Coordinates> list;
 				for (Coordinates coord : territory_cells) {
-					if (isEven(coord.first)) {
-						list = even_coordinates(coord, nbLignes, nbColonnes, matrix);
-					}
-					else {
-						list = odd_coordinates(coord, nbLignes, nbColonnes, matrix);
-					}
+					list = getVoisinsDisponibles(coord, nbLignes, nbColonnes, matrix);
 					list_base.insert(list.begin(), list.end());
 				}
 
 				if (!list_base.empty()) {
 					int size_list_base = list_base.size();
-					int id_cell_rd = rand() % (size_list_base - 0) + 0;
+					int id_cell_rd = rand() % (size_list_base);
 					
 					std::set<Coordinates>::iterator it = list_base.begin();
 					std::advance(it, id_cell_rd);
@@ -91,7 +86,8 @@ void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nb
 					matrix[coord_a.second][coord_a.first] = k;
 					map[k].insert(std::make_pair(coord_a.first, coord_a.second));
 
-					//listvoisin = listVoisin(coord_a);
+					std::set<Coordinates> listVoisins = getVoisins(coord_a, nbLignes, nbColonnes, matrix);
+
 					//listNewNeighborsSCell = checkIfNewNeighbors(listvoisin, k);
 					//addNeighborsToSCell(k, listNewNeighborsSCell);
 
@@ -110,12 +106,12 @@ void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nb
 			bool check = false;
 
 		
-			afficherMap(map);
-			displayMatrix(nbLignes, nbColonnes, matrix);
+			//afficherMap(map);
+			//displayMatrix(nbLignes, nbColonnes, matrix);
 		}
 		end = CheckEndInit(matrix, map, nbLignes, nbColonnes);
-		afficherMap(map);
-		displayMatrix(nbLignes, nbColonnes, matrix);
+		//afficherMap(map);
+		//displayMatrix(nbLignes, nbColonnes, matrix);
 
 	} while (!end);
 
@@ -242,7 +238,8 @@ void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nb
 	{
 		map->cells[9].neighbors[i] = v10[i];
 	}*/
-
+	
+	displayMatrix(nbLignes, nbColonnes, matrix);
 }
 
 bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID) {

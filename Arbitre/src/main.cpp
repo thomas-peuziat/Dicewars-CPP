@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 	void *ctx[nbPlayers];
 	//std::map<int, std::set<Coordinates>> maMap;
 	//maMap = initialisationMap();
-	InitMap(&map);
+	InitMap(&map, 30, 30, 30, 3);
 	InitGameState(&map, &state, nbPlayers);
 
 	
