@@ -88,5 +88,8 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 
 API_EXPORT void EndGame(void *ctx, unsigned int idWinner)
 {
+
 	std::cout << "EndGame" << std::endl;
+	delete ctx;
+
 }

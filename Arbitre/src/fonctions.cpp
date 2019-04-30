@@ -257,7 +257,8 @@ int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 
 			for (int j = 0; j < map->cells[i].nbNeighbors; j++)
 			{
-				if (map->cells[i].neighbors[j]->infos.owner == IdPlayer)									// Le celulle doit être la sienne
+				int neigId = map->cells[i].neighbors[j]->infos.id;
+				if (state->cells[neigId].owner == IdPlayer)									// Le celulle doit être la sienne
 				{
 					int idCell = map->cells[i].neighbors[j]->infos.id;
 					if (colorVector.at(idCell) != 0)
@@ -347,4 +348,9 @@ void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map)
 
 		state->diceStock[idPlayer]--;
 	}
+}
+
+void updatePoints(unsigned int nbPlayers, SGameState *state, const SMap *map) {
+	for (int i =0; i < nbPlayers; i++)
+		state->points[i] = getMaxConnexite(i, map, state);
 }

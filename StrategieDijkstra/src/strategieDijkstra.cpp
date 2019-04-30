@@ -27,10 +27,10 @@ API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *ma
 	std::cout << "InitGame" << std::endl;
 	SContext *ctx = new SContext();
 
-	strcpy(info->name, "Stratégie Dijkstra");
+	strcpy(info->name, "Strategie Dijkstra");
 	strcpy(info->members[0], "COUTY Killian");
 	strcpy(info->members[1], "DANIEL Florian");
-	strcpy(info->members[2], "GAUDUCHEAU Clément");
+	strcpy(info->members[2], "GAUDUCHEAU Clement");
 	strcpy(info->members[3], "PEUZIAT Thomas");
 
 	ctx->id = id;

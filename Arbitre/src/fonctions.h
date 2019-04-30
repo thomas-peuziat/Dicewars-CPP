@@ -18,4 +18,5 @@ bool isWin(int idPlayer, SGameState *state);
 int getMaxConnexite(int IdPlayer, const SMap *map, const SGameState *state);
 void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<int> &colorVector);
 void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map);
+void updatePoints(unsigned int nbPlayers, SGameState *state, const SMap *map);
 //void PlayGame(const int nbPlayers, void* ctx[], const SGameState *state, const SMap *map, pInitGame* tab_InitGame, pPlayTurn* tab_PlayTurn , pEndGame* tab_InitGame);

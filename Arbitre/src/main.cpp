@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
 
 	std::cout << "Argument de la commande : '" << argv[1] << "'" << std::endl;
 	std::cout << "Argument de la commande : '" << argv[2] << "'" << std::endl;
+	std::cout << "Argument de la commande : '" << argv[3] << "'" << std::endl;
 
 	pInitGame InitGame;
 	pPlayTurn PlayTurn;
@@ -132,7 +133,7 @@ int main(int argc, char *argv[])
 	for (unsigned int idxStrat = 0; idxStrat < nbPlayers; idxStrat++)
 	{
 		
-		//player[idxStrat].name[0] = '\0';
+		player[idxStrat].name[0] = '\0';
 
 		for (unsigned int i = 0; i < NbMembers; ++i) {
 			player[idxStrat].members[i][0] = '\0';
@@ -181,11 +182,12 @@ int main(int argc, char *argv[])
 					if (ValidAttack(&turn, &map, &state, i))								// Attaque valide
 					{
 						Confrontation(&turn, &state, &sGameTurn, i);
-						state.points[i] = getMaxConnexite(i, &map, &state);
+						updatePoints(nbPlayers, &state, &map);
 						UpdateGameState(ctxGUI, ++idTurn, &sGameTurn, &state);
+						
 						/*int a;
 						std::cin >> a;*/
-						//std::this_thread::sleep_for(std::chrono::seconds(2));
+						std::this_thread::sleep_for(std::chrono::seconds(2));
 					}		
 					else {
 						gameTurn++;
@@ -198,8 +200,9 @@ int main(int argc, char *argv[])
 			if (gameTurn != i)																	// Si le tour du joueur a échoué, on retablit les paramètres
 				RetablirEtat(&map, &state);
 			else {																			// Sinon on valide les paramètres	
-				ValiderEtat(&map, &state); 
-				int nbDes = getMaxConnexite(i, &map, &state);
+				ValiderEtat(&map, &state);
+				updatePoints(nbPlayers, &state, &map);
+				int nbDes = state.points[i];
 				std::cout << nbDes << std::endl;
 				distributionDes(i, nbDes, &state, &map);
 				SetGameState(ctxGUI, idTurn, &state);
@@ -209,10 +212,13 @@ int main(int argc, char *argv[])
 			
 		}
 	} while (!win);
+
 	std::cout << "Nb tours " << idTurn << std::endl;
 	int a;
 	std::cin >> a;
-	EndGame(ctx[0], 1);
+
+	for (unsigned int i = 0; i < nbPlayers; ++i)
+		EndGame(ctx[i], 1);
 
 	free(tab_PlayTurn);
 	free(tab_InitGame);
