@@ -2,7 +2,7 @@
 #include "../../Commun/interface.h"
 #include "../../Commun/library.h"
 #include <vector>
-#include<time.h>
+#include <time.h>
 #include "MapLoader.h"
 #include "../../Commun/interface_gui.h"
 #include "fonctions.h"
@@ -18,7 +18,7 @@
 	}
 
 
-void LoadMapPerso(Regions &regions, Map map) {
+void LoadMapPerso(Regions &regions, MapTerritoire map) {
 	for (auto iterator : map) {
 		std::set<Coordinates> coor = iterator.second;
 		std::vector<std::pair<unsigned int,unsigned int>> monVector;

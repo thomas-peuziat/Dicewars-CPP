@@ -1,5 +1,5 @@
 #include "fonctions.h"
-
+#include "generation.h"
 
 void RetablirEtat(const SMap *map, SGameState *state)
 {
@@ -15,9 +15,101 @@ void ValiderEtat(SMap *map, const SGameState*state)
 		
 }
 
-void InitMap(SMap *map)
+void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nbPlayers)
 {
-	map->cells = (SCell*)malloc(sizeof(SCell)*NB_CELL);
+
+	Matrix matrix(nbColonnes, std::vector<int>(nbLignes, -1));
+	MapTerritoire map;
+
+
+	// Affichage Matrix	
+	displayMatrix(nbLignes, nbColonnes, matrix);
+
+	// Calcul des bornes pour le random_
+	int c_borne = nbColonnes - 1;
+	int l_borne = nbLignes - 1;
+
+	// Premier tour -> Création aléatoire des cellules de base
+	for (int i = 0; i < nbTerritoires; i++) {
+
+
+		bool check1 = false;
+		while (!check1) {
+			int c = rand() % (c_borne);
+			int l = rand() % (l_borne);
+
+			if (matrix[c][l] == -1) {
+				check1 = true;
+				matrix[c][l] = i;
+				map[i].insert(std::make_pair(l, c));
+
+				// Création SMap sans voisins
+				smap->cells = new SCell[nbTerritoires]();
+				smap->nbCells = nbTerritoires;
+
+				for (auto i = 0; i < smap->nbCells; i++)
+				{
+					smap->cells[i].infos = {};
+					smap->cells[i].infos.id = i;
+				}
+
+			}
+		}
+	}
+
+	afficherMap(map);
+
+	bool end;
+	do {
+
+		end = false;
+		for (int k = 0; k < nbTerritoires; k++) {
+			std::set<Coordinates> territory_cells = map.find(k)->second;
+
+			if (!already_expanded(map, matrix, k, nbLignes, nbColonnes)) {
+				std::set<Coordinates> list_base;
+				std::set<Coordinates> list;
+				for (Coordinates coord : territory_cells) {
+					if (isEven(coord.first)) {
+						list = even_coordinates(coord, nbLignes, nbColonnes, matrix);
+					}
+					else {
+						list = odd_coordinates(coord, nbLignes, nbColonnes, matrix);
+					}
+					list_base.insert(list.begin(), list.end());
+				}
+
+				if (!list_base.empty()) {
+					int size_list_base = list_base.size();
+					int id_cell_rd = rand() % (size_list_base - 0) + 0;
+					
+					std::set<Coordinates>::iterator it = list_base.begin();
+					std::advance(it, id_cell_rd);
+					Coordinates coord_a = *it;
+
+					matrix[coord_a.second][coord_a.first] = k;
+					map[k].insert(std::make_pair(coord_a.first, coord_a.second));
+				}
+
+			}
+			else {
+				end = false;
+			}
+
+			bool check = false;
+
+		
+			afficherMap(map);
+			displayMatrix(nbLignes, nbColonnes, matrix);
+		}
+		end = CheckEndInit(matrix, map, nbLignes, nbColonnes);
+		afficherMap(map);
+		displayMatrix(nbLignes, nbColonnes, matrix);
+
+	} while (!end);
+
+
+	/* map->cells = (SCell*)malloc(sizeof(SCell)*NB_CELL);
 	SCell cell[NB_CELL];
 	std::vector<SCell*> ptcell;
 	for (auto i = 0; i < NB_CELL; i++)
@@ -138,7 +230,8 @@ void InitMap(SMap *map)
 	for (auto i = 0; i < map->cells[9].nbNeighbors; i++)
 	{
 		map->cells[9].neighbors[i] = v10[i];
-	}
+	}*/
+
 }
 
 bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID) {
@@ -245,7 +338,7 @@ int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 {
 	int color = 0;
 	std::vector<int> colorVector(NB_CELL, color);									// Initialisation du vector
-	for (int i = 0; i < NB_CELL; i++)
+	for (int i = 0; i < map->nbCells; i++)
 	{
 		if (state->cells[i].owner == IdPlayer)									// Le celulle doit être la sienne
 		{
