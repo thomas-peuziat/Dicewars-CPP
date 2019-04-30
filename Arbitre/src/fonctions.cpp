@@ -51,6 +51,7 @@ void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nb
 				{
 					smap->cells[i].infos = {};
 					smap->cells[i].infos.id = i;
+					smap->cells[i].infos.owner = -1;
 				}
 
 			}
@@ -89,6 +90,16 @@ void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nb
 
 					matrix[coord_a.second][coord_a.first] = k;
 					map[k].insert(std::make_pair(coord_a.first, coord_a.second));
+
+					//listvoisin = listVoisin(coord_a);
+					//listNewNeighborsSCell = checkIfNewNeighbors(listvoisin, k);
+					//addNeighborsToSCell(k, listNewNeighborsSCell);
+
+					//connexite = getMaxConnexite(-1, smap);
+					//if(connexite == nbTeritoires)
+					//		isFullConnexe = true;
+
+
 				}
 
 			}
@@ -333,6 +344,66 @@ bool isWin(int idPlayer, SGameState *state)
 	
 }
 
+int getMaxConnexite(int IdPlayer, const SMap * map)
+{
+	int color = 0;
+	std::vector<int> colorVector(NB_CELL, color);									// Initialisation du vector
+	for (int i = 0; i < map->nbCells; i++)
+	{
+		if (map->cells[i].infos.owner == IdPlayer)									// Le celulle doit être la sienne
+		{
+			if (colorVector.at(i) == 0)
+			{
+				color++;
+				colorVector.at(i) = color;
+			}
+			else {
+			}
+
+			for (int j = 0; j < map->cells[i].nbNeighbors; j++)
+			{
+				int neigId = map->cells[i].neighbors[j]->infos.id;
+				if (map->cells[neigId].infos.owner == IdPlayer)									// Le celulle doit être la sienne
+				{
+					int idCell = map->cells[i].neighbors[j]->infos.id;
+					if (colorVector.at(idCell) != 0)
+					{
+						if (colorVector.at(idCell) != colorVector.at(i))
+							modifierValuesVector(colorVector.at(idCell), colorVector.at(i), colorVector);
+					}
+					else {
+						colorVector.at(idCell) = colorVector.at(i);
+					}
+				}
+			}
+
+		}
+	}
+
+	std::map<unsigned int, unsigned int> nbColor;
+
+	for (const int& it : colorVector) {
+		if (it != 0) {
+			auto search = nbColor.find(it);
+			if (search == nbColor.end()) {
+				unsigned int value = it;
+				nbColor.insert({ it, 1 });
+			}
+			else {
+				search->second++;
+			}
+		}
+	}
+
+	unsigned int max = 0;
+	for (auto it : nbColor) {
+		if (it.second > max) {
+			max = it.second;
+		}
+	}
+
+	return max;
+}
 
 int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 {

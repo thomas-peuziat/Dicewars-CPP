@@ -7,7 +7,7 @@
 #include <iostream>
 const int NB_CELL = 10;
 
-void InitMap(SMap *map);
+void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nbPlayers);
 void RetablirEtat(const SMap *map, SGameState *state);
 void ValiderEtat(SMap *map, const SGameState*state);
 bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID);
@@ -16,6 +16,7 @@ void Confrontation(const STurn *turn, SGameState *state, SGameTurn *sGameTurn, i
 int getNbTerritories(int IDPlayer, SGameState *state);
 bool isWin(int idPlayer, SGameState *state);
 int getMaxConnexite(int IdPlayer, const SMap *map, const SGameState *state);
+int getMaxConnexite(int IdPlayer, const SMap * map);
 void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<int> &colorVector);
 void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map);
 void updatePoints(unsigned int nbPlayers, SGameState *state, const SMap *map);
