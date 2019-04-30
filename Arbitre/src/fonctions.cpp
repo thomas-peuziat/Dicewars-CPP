@@ -1,4 +1,5 @@
 #include "fonctions.h"
+#include "generation.h"
 
 
 void RetablirEtat(const SMap *map, SGameState *state)
@@ -15,130 +16,260 @@ void ValiderEtat(SMap *map, const SGameState*state)
 		
 }
 
-void InitMap(SMap *map)
+void InitMap(SMap *smap)
 {
-	map->cells = (SCell*)malloc(sizeof(SCell)*NB_CELL);
-	SCell cell[NB_CELL];
-	std::vector<SCell*> ptcell;
-	for (auto i = 0; i < NB_CELL; i++)
-	{
-		SCell c;
-		c.infos.id = i;
-		c.infos.owner = rand() % 3;
-		std::cout << c.infos.owner << std::endl;
-		c.infos.nbDices = rand() % 3 + 1;
-		cell[i] = c;
+	
 
+	srand((unsigned int)time(NULL));
+
+	int nbTerritoires = 4;
+	int nbLignes = 10;
+	int nbColonnes = 5;
+
+	Matrix matrix(nbColonnes, std::vector<int>(nbLignes, -1));
+	MapTerritoire map;
+
+	//smap->cells = (SCell*)malloc(sizeof(SCell)*nbTerritoires);
+	//smap->nbCells = nbTerritoires;
+
+	// Affichage Matrix	
+	displayMatrix(nbLignes, nbColonnes, matrix);
+
+	// Calcul des bornes pour le random
+	int c_borne = nbColonnes - 1;
+	int l_borne = nbLignes - 1;
+
+	// Premier tour -> Création aléatoire des cellules de base
+	for (int i = 0; i < nbTerritoires; i++) {
+
+
+		bool check1 = false;
+		while (!check1) {
+			int c = rand() % (c_borne); 
+			int l = rand() % (l_borne);
+			//std::cout << " Cell de base --> (c = " << c << ",l = " << l << ")" << std::endl;
+
+			if (matrix[c][l] == -1) {
+				check1 = true;
+				matrix[c][l] = i;
+				map[i].insert(std::make_pair(l, c));
+			}
+		}
 	}
 
-
-	for (auto i = 0; i < NB_CELL; i++)
-	{
-		map->cells[i] = cell[i];
-	}
-	map->nbCells = NB_CELL;
+	afficherMap(map);
 
 
-	SCell* ptcell0 = &map->cells[0];
-	SCell* ptcell1 = &map->cells[1];
-	SCell* ptcell2 = &map->cells[2];
-	SCell* ptcell3 = &map->cells[3];
-	SCell* ptcell4 = &map->cells[4];
-	SCell* ptcell5 = &map->cells[5];
-	SCell* ptcell6 = &map->cells[6];
-	SCell* ptcell7 = &map->cells[7];
-	SCell* ptcell8 = &map->cells[8];
-	SCell* ptcell9 = &map->cells[9];
+
+	bool end;
+	do {
+
+		end = false;
+		for (int k = 0; k < nbTerritoires; k++) {
+			//Vérifier si le territoire n'est pas tout recouvert
+			//std::cout << "Iterate on K !" << std::endl;
+			std::set<Coordinates> territory_cells = map.find(k)->second;
+			//std::cout << "K2" << std::endl;
+			//std::cout << "bool already expand = " << already_expanded(map, matrix, k, nbLignes, nbColonnes) << std::endl;
+			
+			if (!already_expanded(map, matrix, k, nbLignes, nbColonnes)) {
+				std::set<Coordinates> list_base;
+				std::set<Coordinates> list;
+				for (Coordinates coord : territory_cells) {
+					if (isEven(coord.first)) {
+						list = even_coordinates(coord, nbLignes, nbColonnes, matrix);
+					}
+					else {
+						list = odd_coordinates(coord, nbLignes, nbColonnes, matrix);
+					}
+					list_base.insert(list.begin(), list.end());
+				}
+
+				//std::cout << "vide la liste_base ? " << list_base.empty() << std::endl;
+				//std::cout << "Coordonnees list_base : ";
+				for (Coordinates coordin : list_base) {
+					//std::cout << "(" << coordin.first << ", " << coordin.second << ")";
+				}
+				//std::cout << std::endl;
+
+				//int size_territory = map.find(k)->second.size();
+				if (!list_base.empty()) {
+					int size_list_base = list_base.size();
+					int id_cell_rd = rand() % (size_list_base - 0) + 0;
+					//std::cout << std::endl;
+					//std::cout << "size_territory/id_cell_rd : " << size_list_base << " " << id_cell_rd << std::endl;
+					//std::cout << std::endl;
+
+					std::set<Coordinates>::iterator it = list_base.begin();
+					//std::cout << "-" << std::endl;
+					std::advance(it, id_cell_rd);
+					//std::cout << "-" << std::endl;
+					Coordinates coord_a = *it;
+					//std::cout << "-" << std::endl;
+					//std::cout << "coord_a --> " << coord_a.first << ", " << coord_a.second << std::endl;
+					//std::cout << "-" << std::endl;
+
+					matrix[coord_a.second][coord_a.first] = k;
+					map[k].insert(std::make_pair(coord_a.first, coord_a.second));
+				}
+
+			}
+			else {
+				//std::cout << std::endl;
+				//std::cout << "------------ C'EST LA FIN ------------" << std::endl;
+				//std::cout << std::endl;
+				end = false;
+			}
+
+			bool check = false;
+
+			//std::cout << "Afficher MAP 1" << std::endl;
+			afficherMap(map);
+			//std::cout << "Afficher MAP 1 - APRES" << std::endl;
+			displayMatrix(nbLignes, nbColonnes, matrix);
+			//std::cout << "Afficher DISPLAY 1 - APRES" << std::endl;
+		}
+		//std::cout << "SALUT" << std::endl;
+
+		end = CheckEndInit(matrix, map, nbLignes, nbColonnes);
+
+		//std::cout << "CAVA" << std::endl;
+
+		//std::cout << "Afficher MAP 2" << std::endl;
+
+		afficherMap(map);
+
+		//std::cout << "UI ET TOI" << std::endl;
+
+		displayMatrix(nbLignes, nbColonnes, matrix);
+
+		//std::cout << "NICKEL" << std::endl;
+
+		//std::cout << end << std::endl;
+	} while (!end);
+
+	//map->cells = (SCell*)malloc(sizeof(SCell)*NB_CELL);
+	//SCell cell[NB_CELL];
+	//std::vector<SCell*> ptcell;
+	//for (auto i = 0; i < NB_CELL; i++)
+	//{
+	//	SCell c;
+	//	c.infos.id = i;
+	//	c.infos.owner = rand() % 3;
+	//	std::cout << c.infos.owner << std::endl;
+	//	c.infos.nbDices = rand() % 3 + 1;
+	//	cell[i] = c;
+
+	//}
 
 
-	std::vector<SCell*> v1 = { ptcell1, ptcell2 };
-	map->cells[0].nbNeighbors = 2;
-	map->cells[0].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[0].nbNeighbors);
-	for (auto i = 0; i < map->cells[0].nbNeighbors; i++)
-	{
-		map->cells[0].neighbors[i] = v1[i];
-	}
-	std::vector<SCell*> v2 = { ptcell0, ptcell7 };
-
-	map->cells[1].nbNeighbors = 2;
-	map->cells[1].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[1].nbNeighbors);
-	for (auto i = 0; i < map->cells[1].nbNeighbors; i++)
-	{
-		map->cells[1].neighbors[i] = v2[i];
-	}
-
-	std::vector<SCell*> v3 = { ptcell0,ptcell7, ptcell3 };
-
-	map->cells[2].nbNeighbors = 3;
-	map->cells[2].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[2].nbNeighbors);
-	for (auto i = 0; i < map->cells[2].nbNeighbors; i++)
-	{
-		map->cells[2].neighbors[i] = v3[i];
-	}
-
-	std::vector<SCell*> v4 = { ptcell2,ptcell4, ptcell8 };
-
-	map->cells[3].nbNeighbors = 3;
-	map->cells[3].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[3].nbNeighbors);
-	for (auto i = 0; i < map->cells[3].nbNeighbors; i++)
-	{
-		map->cells[3].neighbors[i] = v4[i];
-	}
-
-	std::vector<SCell*> v5 = { ptcell6, ptcell5, ptcell3 };
-
-	map->cells[4].nbNeighbors = 3;
-	map->cells[4].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[4].nbNeighbors);
-	for (auto i = 0; i < map->cells[4].nbNeighbors; i++)
-	{
-		map->cells[4].neighbors[i] = v5[i];
-	}
-
-	std::vector<SCell*> v6 = { ptcell4, ptcell8 };
-
-	map->cells[5].nbNeighbors = 2;
-	map->cells[5].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[5].nbNeighbors);
-	for (auto i = 0; i < map->cells[5].nbNeighbors; i++)
-	{
-		map->cells[5].neighbors[i] = v6[i];
-	}
-
-	std::vector<SCell*> v7 = { ptcell4 };
-
-	map->cells[6].nbNeighbors = 1;
-	map->cells[6].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[6].nbNeighbors);
-	for (auto i = 0; i < map->cells[6].nbNeighbors; i++)
-	{
-		map->cells[6].neighbors[i] = v7[i];
-	}
-
-	std::vector<SCell*> v8 = { ptcell2, ptcell1 };
-
-	map->cells[7].nbNeighbors = 2;
-	map->cells[7].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[7].nbNeighbors);
-	for (auto i = 0; i < map->cells[7].nbNeighbors; i++)
-	{
-		map->cells[7].neighbors[i] = v8[i];
-	}
-
-	std::vector<SCell*> v9 = { ptcell3, ptcell5, ptcell9 };
+	//for (auto i = 0; i < NB_CELL; i++)
+	//{
+	//	map->cells[i] = cell[i];
+	//}
+	//map->nbCells = NB_CELL;
 
 
-	map->cells[8].nbNeighbors = 3;
-	map->cells[8].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[8].nbNeighbors);
-	for (auto i = 0; i < map->cells[8].nbNeighbors; i++)
-	{
-		map->cells[8].neighbors[i] = v9[i];
-	}
+	//SCell* ptcell0 = &map->cells[0];
+	//SCell* ptcell1 = &map->cells[1];
+	//SCell* ptcell2 = &map->cells[2];
+	//SCell* ptcell3 = &map->cells[3];
+	//SCell* ptcell4 = &map->cells[4];
+	//SCell* ptcell5 = &map->cells[5];
+	//SCell* ptcell6 = &map->cells[6];
+	//SCell* ptcell7 = &map->cells[7];
+	//SCell* ptcell8 = &map->cells[8];
+	//SCell* ptcell9 = &map->cells[9];
 
-	std::vector<SCell*> v10 = { ptcell8 };
 
-	map->cells[9].nbNeighbors = 1;
-	map->cells[9].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[9].nbNeighbors);
-	for (auto i = 0; i < map->cells[9].nbNeighbors; i++)
-	{
-		map->cells[9].neighbors[i] = v10[i];
-	}
+	//std::vector<SCell*> v1 = { ptcell1, ptcell2 };
+	//map->cells[0].nbNeighbors = 2;
+	//map->cells[0].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[0].nbNeighbors);
+	//for (auto i = 0; i < map->cells[0].nbNeighbors; i++)
+	//{
+	//	map->cells[0].neighbors[i] = v1[i];
+	//}
+	//std::vector<SCell*> v2 = { ptcell0, ptcell7 };
+
+	//map->cells[1].nbNeighbors = 2;
+	//map->cells[1].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[1].nbNeighbors);
+	//for (auto i = 0; i < map->cells[1].nbNeighbors; i++)
+	//{
+	//	map->cells[1].neighbors[i] = v2[i];
+	//}
+
+	//std::vector<SCell*> v3 = { ptcell0,ptcell7, ptcell3 };
+
+	//map->cells[2].nbNeighbors = 3;
+	//map->cells[2].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[2].nbNeighbors);
+	//for (auto i = 0; i < map->cells[2].nbNeighbors; i++)
+	//{
+	//	map->cells[2].neighbors[i] = v3[i];
+	//}
+
+	//std::vector<SCell*> v4 = { ptcell2,ptcell4, ptcell8 };
+
+	//map->cells[3].nbNeighbors = 3;
+	//map->cells[3].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[3].nbNeighbors);
+	//for (auto i = 0; i < map->cells[3].nbNeighbors; i++)
+	//{
+	//	map->cells[3].neighbors[i] = v4[i];
+	//}
+
+	//std::vector<SCell*> v5 = { ptcell6, ptcell5, ptcell3 };
+
+	//map->cells[4].nbNeighbors = 3;
+	//map->cells[4].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[4].nbNeighbors);
+	//for (auto i = 0; i < map->cells[4].nbNeighbors; i++)
+	//{
+	//	map->cells[4].neighbors[i] = v5[i];
+	//}
+
+	//std::vector<SCell*> v6 = { ptcell4, ptcell8 };
+
+	//map->cells[5].nbNeighbors = 2;
+	//map->cells[5].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[5].nbNeighbors);
+	//for (auto i = 0; i < map->cells[5].nbNeighbors; i++)
+	//{
+	//	map->cells[5].neighbors[i] = v6[i];
+	//}
+
+	//std::vector<SCell*> v7 = { ptcell4 };
+
+	//map->cells[6].nbNeighbors = 1;
+	//map->cells[6].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[6].nbNeighbors);
+	//for (auto i = 0; i < map->cells[6].nbNeighbors; i++)
+	//{
+	//	map->cells[6].neighbors[i] = v7[i];
+	//}
+
+	//std::vector<SCell*> v8 = { ptcell2, ptcell1 };
+
+	//map->cells[7].nbNeighbors = 2;
+	//map->cells[7].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[7].nbNeighbors);
+	//for (auto i = 0; i < map->cells[7].nbNeighbors; i++)
+	//{
+	//	map->cells[7].neighbors[i] = v8[i];
+	//}
+
+	//std::vector<SCell*> v9 = { ptcell3, ptcell5, ptcell9 };
+
+
+	//map->cells[8].nbNeighbors = 3;
+	//map->cells[8].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[8].nbNeighbors);
+	//for (auto i = 0; i < map->cells[8].nbNeighbors; i++)
+	//{
+	//	map->cells[8].neighbors[i] = v9[i];
+	//}
+
+	//std::vector<SCell*> v10 = { ptcell8 };
+
+	//map->cells[9].nbNeighbors = 1;
+	//map->cells[9].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[9].nbNeighbors);
+	//for (auto i = 0; i < map->cells[9].nbNeighbors; i++)
+	//{
+	//	map->cells[9].neighbors[i] = v10[i];
+	//}
 }
 
 bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID) {
@@ -175,7 +306,7 @@ void InitGameState(const SMap *map, SGameState *state, unsigned int nbPlayer)
 
 	state->nbCells = NB_CELL;
 
-	for (int i = 0; i < nbPlayer; i++)
+	for (unsigned int i = 0; i < nbPlayer; i++)
 	{
 		state->points[i] = 0;
 		state->diceStock[i] = 0;
@@ -221,7 +352,7 @@ void Confrontation(const STurn *turn, SGameState *state, SGameTurn* sGameTurn, i
 
 int getNbTerritories(int IDPlayer, SGameState *state) {
 	int nbTerr = 0;
-	for (int i = 0; i < state->nbCells; i++)
+	for (unsigned int i = 0; i < state->nbCells; i++)
 	{
 		if (state->cells[i].owner == IDPlayer)
 			nbTerr++;
@@ -319,7 +450,7 @@ void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map)
 
 	// TODO : Optimiser parce qu'on passe plusieurs fois dans toute la map pour tout les joueurs
 	// Faire une struct joueur avec tableau de cellule pour chaque joueur ?
-	for (auto i = 0; i < state->nbCells; i++) {
+	for (unsigned int i = 0; i < state->nbCells; i++) {
 		if (state->cells[i].owner == idPlayer && state->cells[i].nbDices < 8) {
 			TCellPerPlayer.push_back(state->cells[i].id);
 		}
@@ -353,6 +484,6 @@ void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map)
 }
 
 void updatePoints(unsigned int nbPlayers, SGameState *state, const SMap *map) {
-	for (int i =0; i < nbPlayers; i++)
+	for (unsigned int i =0; i < nbPlayers; i++)
 		state->points[i] = getMaxConnexite(i, map, state);
 }

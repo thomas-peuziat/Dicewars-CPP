@@ -1,10 +1,7 @@
 #include "generation.h"
 
-typedef std::pair<int, int> Coordinates;
-typedef std::vector<std::vector<int>> Matrix;
-typedef std::map<int, std::set<Coordinates>> MapTerritoire;
-
 unsigned int setNumberTerritories(unsigned int nb_players) {
+
 	int a = 30 + rand() % (10 - 0) + 0;
 	//std::cout << "v1 = " << a << std::endl;
 
@@ -187,6 +184,8 @@ bool CheckEndInit(Matrix & matrix, MapTerritoire & map, int L, int C) {
 
 void initialisationMap() {
 
+	std::cout << "(8) " << setNumberTerritories(8) << std::endl;
+	std::cout << "(2) " << setNumberTerritories(2) << std::endl;
 	srand((unsigned int)time(NULL));
 
 	int nbTerritoires = 4;
@@ -200,7 +199,7 @@ void initialisationMap() {
 	// Affichage Matrix	
 	displayMatrix(nbLignes, nbColonnes, matrix);
 
-	// Calcul des bornes pour le random_
+	// Calcul des bornes pour le random
 	int c_borne = nbColonnes - 1;
 	int l_borne = nbLignes - 1;
 

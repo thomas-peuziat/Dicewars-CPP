@@ -18,7 +18,7 @@
 	}
 
 
-void LoadMapPerso(Regions &regions, Map map) {
+void LoadMapPerso(Regions &regions, MapTerritoire & map) {
 	for (auto iterator : map) {
 		std::set<Coordinates> coor = iterator.second;
 		std::vector<std::pair<unsigned int,unsigned int>> monVector;
