@@ -60,20 +60,24 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 			if (state->cells[i].owner == contexte->id) {
 				// Si la cellule est celle du joueur
 				myCell = state->cells[i];
+				if (myCell.nbDices > 1)
+				{
 
-				for (int j = 0; j < territories[myCell.id].nbNeighbors; j++) {
-					// Pour chaque voisin de la celulle en cours
-					
-					int neigId = territories[myCell.id].neighbors[j]->infos.id;
-					if (state->cells[neigId].owner != (contexte->id)) {
-						// La cellule n'est pas au joueur
-						neighborCell = state->cells[neigId];
-						diffDes = myCell.nbDices - neighborCell.nbDices;
 
-						if (diffDes >= 0 && diffDes >= diffDesMax) {
-							cellFrom = myCell.id;
-							cellTo = neighborCell.id;
-							diffDesMax = diffDes;
+					for (int j = 0; j < territories[myCell.id].nbNeighbors; j++) {
+						// Pour chaque voisin de la celulle en cours
+
+						int neigId = territories[myCell.id].neighbors[j]->infos.id;
+						if (state->cells[neigId].owner != (contexte->id)) {
+							// La cellule n'est pas au joueur
+							neighborCell = state->cells[neigId];
+							diffDes = myCell.nbDices - neighborCell.nbDices;
+
+							if (diffDes >= 0 && diffDes >= diffDesMax) {
+								cellFrom = myCell.id;
+								cellTo = neighborCell.id;
+								diffDesMax = diffDes;
+							}
 						}
 					}
 				}

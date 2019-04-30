@@ -48,7 +48,7 @@ void LoadMapTest(Regions &regions) {
 int main(int argc, char *argv[])
 {
 	srand(time(NULL));
-	const int nbPlayers = 2;
+	const int nbPlayers = 3;
 	if (argc < 2)
 	{
 		std::cerr << "Usage: " << argv[0] << " libfile" << std::endl;
@@ -109,9 +109,10 @@ int main(int argc, char *argv[])
 	SPlayerInfo player[nbPlayers];
 	STurn turn;
 	void *ctx[nbPlayers];
-
+	//std::map<int, std::set<Coordinates>> maMap;
+	//maMap = initialisationMap();
 	InitMap(&map);
-	InitGameState(&map, &state);
+	InitGameState(&map, &state, nbPlayers);
 
 	
 
@@ -122,11 +123,10 @@ int main(int argc, char *argv[])
 	Regions regions;							// vector de vector de pair, donc la grille, à relier à la génération de SMap
 	//LoadDefaultMap(regions);
 	LoadMapTest(regions);
+	//LoadMapPerso(regions, maMap);
 	SRegions *mapCells = ConvertMap(regions);	// Convert des std::vector< std::vector<std::pair<unsigned int, unsigned int>> > en SRegions*
 	ctxGUI = InitGUI(nbPlayers, mapCells);		
 	DeleteMap(mapCells);						// Après InitGUI
-	
-	
 
 	
 
@@ -159,8 +159,8 @@ int main(int argc, char *argv[])
 	
 	SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
 	
-	int i;
-	std::cin >> i;
+	int a;
+	std::cin >> a;
 	// Interblocage lorsque tout le monde ne possède plus qu'un dé sur son territoire
 	int fin = 0;
 	int gameTurn = 1;
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
 						
 						/*int a;
 						std::cin >> a;*/
-						std::this_thread::sleep_for(std::chrono::seconds(2));
+						//std::this_thread::sleep_for(std::chrono::seconds(2));
 					}		
 					else {
 						gameTurn++;
@@ -214,8 +214,6 @@ int main(int argc, char *argv[])
 	} while (!win);
 
 	std::cout << "Nb tours " << idTurn << std::endl;
-	int a;
-	std::cin >> a;
 
 	for (unsigned int i = 0; i < nbPlayers; ++i)
 		EndGame(ctx[i], 1);

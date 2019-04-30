@@ -11,7 +11,7 @@ void InitMap(SMap *map);
 void RetablirEtat(const SMap *map, SGameState *state);
 void ValiderEtat(SMap *map, const SGameState*state);
 bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID);
-void InitGameState(const SMap *map, SGameState *state);
+void InitGameState(const SMap *map, SGameState *state, unsigned int nbPlayer);
 void Confrontation(const STurn *turn, SGameState *state, SGameTurn *sGameTurn, int idPlayer);
 int getNbTerritories(int IDPlayer, SGameState *state);
 bool isWin(int idPlayer, SGameState *state);
