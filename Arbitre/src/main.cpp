@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
 	for (unsigned int i = 0; i < 8; ++i)
 		for (unsigned int j = 0; j < 2; ++j)
 			sGameTurn.dices[j][i] = 0;
-	
+	updatePoints(nbPlayers, &state, &map);
 	SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
 	
 	int a;
@@ -222,10 +222,11 @@ int main(int argc, char *argv[])
 	free(tab_InitGame);
 	free(tab_EndGame);
 
+	std::cout << "avant" << std::endl;
 	UninitGUI(ctxGUI);
-
+	std::cout << "avant2" << std::endl;
 	CLOSELIB(hLib);
-
+	std::cout << "après" << std::endl;
 	return(0);
 }
 
