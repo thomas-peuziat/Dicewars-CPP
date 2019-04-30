@@ -1,10 +1,7 @@
 #include "generation.h"
 
-typedef std::pair<int, int> Coordinates;
-typedef std::vector<std::vector<int>> Matrix;
-typedef std::map<int, std::set<Coordinates>> MapTerritoire;
-
 unsigned int setNumberTerritories(unsigned int nb_players) {
+
 	int a = 30 + rand() % (10 - 0) + 0;
 	//std::cout << "v1 = " << a << std::endl;
 

@@ -268,7 +268,7 @@ void InitGameState(const SMap *map, SGameState *state, unsigned int nbPlayer)
 
 	state->nbCells = NB_CELL;
 
-	for (int i = 0; i < nbPlayer; i++)
+	for (unsigned int i = 0; i < nbPlayer; i++)
 	{
 		state->points[i] = 0;
 		state->diceStock[i] = 0;
@@ -314,7 +314,7 @@ void Confrontation(const STurn *turn, SGameState *state, SGameTurn* sGameTurn, i
 
 int getNbTerritories(int IDPlayer, SGameState *state) {
 	int nbTerr = 0;
-	for (int i = 0; i < state->nbCells; i++)
+	for (unsigned int i = 0; i < state->nbCells; i++)
 	{
 		if (state->cells[i].owner == IDPlayer)
 			nbTerr++;
@@ -412,7 +412,7 @@ void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map)
 
 	// TODO : Optimiser parce qu'on passe plusieurs fois dans toute la map pour tout les joueurs
 	// Faire une struct joueur avec tableau de cellule pour chaque joueur ?
-	for (auto i = 0; i < state->nbCells; i++) {
+	for (unsigned int i = 0; i < state->nbCells; i++) {
 		if (state->cells[i].owner == idPlayer && state->cells[i].nbDices < 8) {
 			TCellPerPlayer.push_back(state->cells[i].id);
 		}
@@ -446,6 +446,6 @@ void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map)
 }
 
 void updatePoints(unsigned int nbPlayers, SGameState *state, const SMap *map) {
-	for (int i =0; i < nbPlayers; i++)
+	for (unsigned int i =0; i < nbPlayers; i++)
 		state->points[i] = getMaxConnexite(i, map, state);
 }
