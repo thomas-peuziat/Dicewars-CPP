@@ -18,6 +18,7 @@ struct SContext
 	int nbPlayers;
 	SPlayerInfo* infos;
 	const SMap* map;
+	std::vector<int> wayToFollow; //chemin de cellules à suivre pour atteindre l'autres composantes connexes
 	//unsigned int gameTurn;//vérifier si toujours égal au coup précédent
 };
 
@@ -46,12 +47,13 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 {
 	std::cout << "PlayTurn DIJKSTRA" << std::endl;
 	SContext* contexte = static_cast<SContext*>(ctx);
-	SCell *territories = static_cast<SContext*>(ctx)->map->cells;
-	const SMap *map = static_cast<SContext*>(ctx)->map;
+	SCell *territories = contexte->map->cells;
+	const SMap *map = contexte->map;
 	const int nbCells = map->nbCells;
+	std::vector<int> Predecesseurs = {};
 
 	//si le coup précédent est valide
-	if (gameTurn) {
+	if (gameTurn == contexte->id) {
 		
 		//a supprimer à la fin 
 		//state->nbCells donne le nombre de cell dans la map
@@ -171,7 +173,7 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 				for (int i = 0; i < iteratorOnCellToJoin.second.size(); i++) { //parcourt du vector qui est clé de la map
 					int cellToATK = iteratorOnCellToJoin.second[i];
 					//calcul de la distance qui les sépare
-					int distanceBetweenCell = initDijkstra(map, nbCells,cellDepart, cellToATK);
+					int distanceBetweenCell = initDijkstra(map, nbCells,cellDepart, cellToATK, Predecesseurs);
 					//a supprimer à la fin
 					std::cout << "distance entre 2 cell --> dep : " << cellDepart << " - Arr : " << cellToATK << " => " << distanceBetweenCell << std::endl;
 					// --
@@ -220,14 +222,52 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 					cellToATKWithMaxiDices = itVec.second;
 				}
 			}
-			//a supprimer à la fin
 			std::cout << std::endl << std::endl;
-			std::cout << "cellDep => " << cellDepWithMaxiDices << " cellArr => " << cellToATKWithMaxiDices << " nbDice => " << maxiDice << std::endl;
-			// --
+			std::cout << "AVEC VECTOR" << std::endl;
+			if (distanceMinimale < maxiDice/8) {
+				turn->cellFrom = cellDepWithMaxiDices;
+				
+				//construction du chemin à suivre
+				int currentCell = cellToATKWithMiniDistance;
+				while (currentCell != cellDepartWithMiniDistance)
+				{
+					contexte->wayToFollow.push_back(currentCell);
+					currentCell = Predecesseurs[currentCell]; //la cellule courante prend la valeur de son précédent
+				}
+
+				turn->cellTo = contexte->wayToFollow[contexte->wayToFollow.size() - 1];//cellToATKWithMaxiDices;
+				contexte->wayToFollow.pop_back();
+				std::cout << "cellDep => " << cellDepWithMaxiDices << " cellArr => " << cellToATKWithMaxiDices << " nbDice => " << maxiDice << std::endl;
+				return 0;
+			}
+			else {
+				std::cout << "nombre de des insuffisants" << std::endl;
+				return 1;
+			}
 		}
 		else { //si 1 seule apparition, on évite de reboucler
-			/*turn->cellFrom = cellDepartWithMiniDistance;
-			turn->cellTo = cellToATKWithMiniDistance;*/
+			std::cout << "SANS VECTOR" << std::endl;
+			if (distanceMinimale < map->cells[cellDepartWithMiniDistance].infos.nbDices / 8) {
+				std::cout << "cellDep => " << cellDepartWithMiniDistance << " cellArr => " << cellToATKWithMiniDistance << " nbDice => " << map->cells[cellDepartWithMiniDistance].infos.nbDices << std::endl;
+				
+				//construction du chemin à suivre
+				int currentCell = cellToATKWithMiniDistance;
+				while (currentCell != cellDepartWithMiniDistance)
+				{
+					contexte->wayToFollow.push_back(currentCell);
+					currentCell = Predecesseurs[currentCell]; //la cellule courante prend la valeur de son précédent
+				}
+				
+				turn->cellFrom = cellDepartWithMiniDistance;
+				turn->cellTo = contexte->wayToFollow[contexte->wayToFollow.size() - 1];//cellToATKWithMiniDistance;
+				contexte->wayToFollow.pop_back();
+				return 0;
+			}
+			else {
+				std::cout << "nombre de des insuffisants pour attaquer" << std::endl;
+				return 1;
+			}
+
 		}
 
 		//a supprimer à la fin

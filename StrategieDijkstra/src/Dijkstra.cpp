@@ -2,11 +2,11 @@
 
 
 //idCellDepart => id de la cellue pour laquelle on cherche le plus court chemin
-int initDijkstra(const SMap *map, const int nbCells, int idCellDepart, int idCellArrivee) {
+//tableau des predecesseurs la valeur correspond à l'id de la cellule précédente
+int initDijkstra(const SMap *map, const int nbCells, int idCellDepart, int idCellArrivee, std::vector<int>& predecesseurs) {
 
 	// les index correspondent aux ids des cellules
 	std::vector<int> distance = {}; //tableau des distances entre la cellule de départ et une cellule 'i'
-	std::vector<int> predecesseurs = {}; //tableau des predecesseurs la valeur correspond à l'id de la cellule précédente
 	std::vector<bool> sommetDijkstra = {}; //tableau qui indique quels sommets ont été inclus dans l'arborescence
 
 	
