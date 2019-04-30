@@ -24,7 +24,7 @@ void InitMap(SMap *map)
 	{
 		SCell c;
 		c.infos.id = i;
-		c.infos.owner = rand() % 2;
+		c.infos.owner = rand() % 3;
 		std::cout << c.infos.owner << std::endl;
 		c.infos.nbDices = rand() % 3 + 1;
 		cell[i] = c;
@@ -167,17 +167,19 @@ bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, in
 	return true;	// Le coup est valide
 }
 
-void InitGameState(const SMap *map, SGameState *state)
+void InitGameState(const SMap *map, SGameState *state, unsigned int nbPlayer)
 {
 	state->cells = (SCellInfo*)malloc(sizeof(SCellInfo)*NB_CELL);
 	for (int i = 0; i < map->nbCells; i++)
 		state->cells[i] = map->cells[i].infos;
 
 	state->nbCells = NB_CELL;
-	state->points[0] = 0;
-	state->points[1] = 0;
-	state->diceStock[0] = 0;
-	state->diceStock[1] = 0;
+
+	for (int i = 0; i < nbPlayer; i++)
+	{
+		state->points[i] = 0;
+		state->diceStock[i] = 0;
+	}
 }
 
 void Confrontation(const STurn *turn, SGameState *state, SGameTurn* sGameTurn, int idPlayer)
