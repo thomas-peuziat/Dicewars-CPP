@@ -2,6 +2,13 @@
 #include "../../Commun/interface.h"
 #include "../../Commun/library.h"
 #include <vector>
+#include<time.h>
+#include "MapLoader.h"
+#include "../../Commun/interface_gui.h"
+#include "fonctions.h"
+#include "generation.h"
+#include <thread>
+#include <chrono>
 
 #define GETFUNCTION(handler,name) \
 	if ((name = (p##name)GETPROC(hLib, #name)) == nullptr)\
@@ -10,18 +17,38 @@
 		return(-1);\
 	}
 
-const int NB_CELL = 10;
 
-void InitMap(SMap *map);
-void RetablirEtat(const SMap *map, SGameState *state);
-void ValiderEtat(SMap *map, const SGameState*state);
-bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID);
-void InitGameState(const SMap *map, SGameState *state);
-void UpdateGameState(const STurn *turn, SGameState *state);
+void LoadMapPerso(Regions &regions, Map map) {
+	for (auto iterator : map) {
+		std::set<Coordinates> coor = iterator.second;
+		std::vector<std::pair<unsigned int,unsigned int>> monVector;
+		for (auto it2 : coor) {
+
+			monVector.push_back(std::make_pair(it2.first, it2.second));
+		}
+		
+		regions.push_back(monVector);
+	}
+}
+
+void LoadMapTest(Regions &regions) {
+	regions.push_back({ {1,1}, {1,2} });
+	regions.push_back({ {2,1} });
+	regions.push_back({ {2,3}, {2,4}, {3,4} });
+	regions.push_back({ {4,5} });
+	regions.push_back({ {5,4}, {6,5} });
+	regions.push_back({ {6,6} });
+	regions.push_back({ {7,4} });
+	regions.push_back({ {3,1}, {3,2}, {3,3} });
+	regions.push_back({ {4,6}, {5,6} });
+	regions.push_back({ {4,7} });
+}
 
 
 int main(int argc, char *argv[])
 {
+	srand(time(NULL));
+	const int nbPlayers = 3;
 	if (argc < 2)
 	{
 		std::cerr << "Usage: " << argv[0] << " libfile" << std::endl;
@@ -29,17 +56,40 @@ int main(int argc, char *argv[])
 	}
 
 	std::cout << "Argument de la commande : '" << argv[1] << "'" << std::endl;
-
-	HLIB hLib;
-	if ((hLib = LOADLIB(argv[1])) == nullptr)
-	{
-		std::cerr << "Impossible de charger la librairie '" << argv[1] << "'" << std::endl;
-		return(-1);
-	}
+	std::cout << "Argument de la commande : '" << argv[2] << "'" << std::endl;
+	std::cout << "Argument de la commande : '" << argv[3] << "'" << std::endl;
 
 	pInitGame InitGame;
 	pPlayTurn PlayTurn;
 	pEndGame EndGame;
+
+	pInitGame* tab_InitGame = (pInitGame*)malloc(sizeof(pInitGame)*NB_CELL);
+	pPlayTurn* tab_PlayTurn = (pPlayTurn*)malloc(sizeof(pPlayTurn)*NB_CELL);
+	pEndGame* tab_EndGame = (pEndGame*)malloc(sizeof(pEndGame)*NB_CELL);
+
+	HLIB hLib;
+	for (int i = 0; i < nbPlayers; i++)
+	{
+		if ((hLib = LOADLIB(argv[i + 1])) == nullptr)
+		{
+			std::cerr << "Impossible de charger la librairie '" << argv[i + 1] << "'" << std::endl;
+			return(-1);
+		}
+
+		else {
+
+			GETFUNCTION(hLib, InitGame);
+			tab_InitGame[i] = InitGame;
+
+			GETFUNCTION(hLib, PlayTurn);
+			tab_PlayTurn[i] = PlayTurn;
+
+			GETFUNCTION(hLib, EndGame);
+			tab_EndGame[i] = EndGame;
+		}
+	}
+
+
 
 	/*
 	Utilisation de la macro GETFUNCTION pour éviter de réécrire le même genre de code (attention à adapter dans votre projet en fonction de votre contexte !)
@@ -52,260 +102,134 @@ int main(int argc, char *argv[])
 	}
 
 	*/
-	GETFUNCTION(hLib, InitGame);
-	GETFUNCTION(hLib, PlayTurn);
-	GETFUNCTION(hLib, EndGame);
 
-	SMap map = {};
-	SGameState state = {};
-	SPlayerInfo player = {};
-	STurn turn = {};
-	void *ctx[1];
-
+	
+	SMap map;
+	SGameState state;
+	SPlayerInfo player[nbPlayers];
+	STurn turn;
+	void *ctx[nbPlayers];
+	//std::map<int, std::set<Coordinates>> maMap;
+	//maMap = initialisationMap();
 	InitMap(&map);
-	InitGameState(&map, &state);
+	InitGameState(&map, &state, nbPlayers);
 
-	for (unsigned int i = 0; i < NbMembers; ++i) {
-		player.members[i][0] = '\0';
-	}
-	std::cout << "Nom de la stratégie : '" << player.name << "'" << std::endl;
+	
 
-	ctx[0] = InitGame(0, 3, &map, &player);
+	void *ctxGUI;
+	SGameTurn sGameTurn;
+	
 
+	Regions regions;							// vector de vector de pair, donc la grille, à relier à la génération de SMap
+	//LoadDefaultMap(regions);
+	LoadMapTest(regions);
+	//LoadMapPerso(regions, maMap);
+	SRegions *mapCells = ConvertMap(regions);	// Convert des std::vector< std::vector<std::pair<unsigned int, unsigned int>> > en SRegions*
+	ctxGUI = InitGUI(nbPlayers, mapCells);		
+	DeleteMap(mapCells);						// Après InitGUI
 
-	for (unsigned int i = 0; i < NbMembers; ++i)
-		std::cout << "Nom du membre #" << (i + 1) << " : '" << player.members[i] << "'" << std::endl;
-	int fin = 0;
-	int gameTurn = 0;
+	
 
-	// TODO : Penser au fait qu'on utilise un tableau de ctx, un par joueur
-	do {
-		fin = PlayTurn(gameTurn, ctx[0], &state, &turn);
-		if (fin != 0) {
-			int gameTurn = ValidAttack(&turn, &map, &state, 0);
+	for (unsigned int idxStrat = 0; idxStrat < nbPlayers; idxStrat++)
+	{
+		
+		player[idxStrat].name[0] = '\0';
 
-			if (gameTurn == 0)
-				UpdateGameState(&turn, &state);
-			else
-				break;
+		for (unsigned int i = 0; i < NbMembers; ++i) {
+			player[idxStrat].members[i][0] = '\0';
 		}
+		
+		ctx[idxStrat] = tab_InitGame[idxStrat](idxStrat, nbPlayers, &map, &player[idxStrat]);
+		
+		SetPlayerInfo(ctxGUI, idxStrat, &player[idxStrat]);		// A placer à chaque chargement de librairie de joueur.
+
+		std::cout << "Nom de la strategie : '" << player[idxStrat].name << "'" << std::endl;
+
+
+
+		for (unsigned int i = 0; i < NbMembers; ++i)
+			std::cout << "Nom du membre #" << (i + 1) << " : '" << player[idxStrat].members[i] << "'" << std::endl;
+	}
+
+	unsigned int idTurn = 0;
+	
+	for (unsigned int i = 0; i < 8; ++i)
+		for (unsigned int j = 0; j < 2; ++j)
+			sGameTurn.dices[j][i] = 0;
+	updatePoints(nbPlayers, &state, &map);
+	SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
+	
+	int a;
+	std::cin >> a;
+	// Interblocage lorsque tout le monde ne possède plus qu'un dé sur son territoire
+	int fin = 0;
+	int gameTurn = 1;
+	bool win = false;
+
+	idTurn++;
+	do {
+		// Pour chaque joueurs 
+		//mettre i à 1 si on veut tester que la 2eme stratégie
+		for (int i = 0; i < nbPlayers; i++) {
 			
+			fin = 0;
+			gameTurn = i;
+			// Tant que le joueur fait un coup valide ou que le joueur a fini son tour
+			do {
+				fin = tab_PlayTurn[i](gameTurn, ctx[i], &state, &turn);
+				
+				if (!fin) {
+					if (ValidAttack(&turn, &map, &state, i))								// Attaque valide
+					{
+						Confrontation(&turn, &state, &sGameTurn, i);
+						updatePoints(nbPlayers, &state, &map);
+						UpdateGameState(ctxGUI, ++idTurn, &sGameTurn, &state);
+						
+						/*int a;
+						std::cin >> a;*/
+						std::this_thread::sleep_for(std::chrono::seconds(3));
+					}		
+					else {
+						gameTurn++;
+						break;
+					}		
+				}
+				win = isWin(i, &state);
+			} while (!fin && !win);
 
-	} while (fin != 0);
+			if (gameTurn != i)																	// Si le tour du joueur a échoué, on retablit les paramètres
+				RetablirEtat(&map, &state);
+			else {																			// Sinon on valide les paramètres	
+				ValiderEtat(&map, &state);
+				updatePoints(nbPlayers, &state, &map);
+				int nbDes = state.points[i];
+				std::cout << nbDes << std::endl;
+				distributionDes(i, nbDes, &state, &map);
+			}
+			SetGameState(ctxGUI, idTurn, &state);
+			if (win)
+				break;
+			
+		}
+	} while (!win);
 
+	std::cout << "Nb tours " << idTurn << std::endl;
 
-	if (gameTurn == 1)							// Si le tour du joueur a échoué, on retablit les paramètres
-	{
-		RetablirEtat(&map, &state);
-	}
-	else										// Sinon on valide les paramètres
-	{
-		ValiderEtat(&map, &state);
-	}
+	for (unsigned int i = 0; i < nbPlayers; ++i)
+		EndGame(ctx[i], 1);
 
-	EndGame(ctx[0], 1);
+	free(tab_PlayTurn);
+	free(tab_InitGame);
+	free(tab_EndGame);
 
+	std::cout << "avant" << std::endl;
+	UninitGUI(ctxGUI);
+	std::cout << "avant2" << std::endl;
 	CLOSELIB(hLib);
-
+	std::cout << "après" << std::endl;
 	return(0);
 }
 
-void RetablirEtat(const SMap *map, SGameState *state)
-{
-	for (int i = 0; i < map->nbCells; i++)
-		state->cells[i] = map->cells[i].infos;
-}
-
-void ValiderEtat(SMap *map, const SGameState*state)
-{
-	for (int i = 0; i < map->nbCells; i++)
-		map->cells[i].infos = state->cells[i];
-}
-
-void InitMap(SMap *map)
-{
-	map->cells = (SCell*)malloc(sizeof(SCell)*NB_CELL);
-	SCell cell[NB_CELL];
-	std::vector<SCell*> ptcell;
-	for (auto i = 0; i < NB_CELL; i++)
-	{
-		SCell c;
-		c.infos.id = i;
-		c.infos.owner = rand() % 5;
-		c.infos.nbDices = rand() % 6 + 1;
-		cell[i] = c;
 
 
-	}
-
-
-	for (auto i = 0; i < NB_CELL; i++)
-	{
-		map->cells[i] = cell[i];
-	}
-	map->nbCells = NB_CELL;
-
-
-	SCell* ptcell0 = &map->cells[0];
-	SCell* ptcell1 = &map->cells[1];
-	SCell* ptcell2 = &map->cells[2];
-	SCell* ptcell3 = &map->cells[3];
-	SCell* ptcell4 = &map->cells[4];
-	SCell* ptcell5 = &map->cells[5];
-	SCell* ptcell6 = &map->cells[6];
-	SCell* ptcell7 = &map->cells[7];
-	SCell* ptcell8 = &map->cells[8];
-	SCell* ptcell9 = &map->cells[9];
-
-
-	std::vector<SCell*> v1 = { ptcell1, ptcell2 };
-	map->cells[0].nbNeighbors = 2;
-	map->cells[0].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[0].nbNeighbors);
-	for (auto i = 0; i < map->cells[0].nbNeighbors; i++)
-	{
-		map->cells[0].neighbors[i] = v1[i];
-	}
-	std::vector<SCell*> v2 = { ptcell0, ptcell7 };
-
-	map->cells[1].nbNeighbors = 2;
-	map->cells[1].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[1].nbNeighbors);
-	for (auto i = 0; i < map->cells[1].nbNeighbors; i++)
-	{
-		map->cells[1].neighbors[i] = v2[i];
-	}
-
-	std::vector<SCell*> v3 = { ptcell0,ptcell7, ptcell3 };
-
-	map->cells[2].nbNeighbors = 3;
-	map->cells[2].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[2].nbNeighbors);
-	for (auto i = 0; i < map->cells[2].nbNeighbors; i++)
-	{
-		map->cells[2].neighbors[i] = v3[i];
-	}
-
-	std::vector<SCell*> v4 = { ptcell2,ptcell4, ptcell8 };
-
-	map->cells[3].nbNeighbors = 3;
-	map->cells[3].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[3].nbNeighbors);
-	for (auto i = 0; i < map->cells[3].nbNeighbors; i++)
-	{
-		map->cells[3].neighbors[i] = v4[i];
-	}
-
-	std::vector<SCell*> v5 = { ptcell6, ptcell5, ptcell3 };
-
-	map->cells[4].nbNeighbors = 3;
-	map->cells[4].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[4].nbNeighbors);
-	for (auto i = 0; i < map->cells[4].nbNeighbors; i++)
-	{
-		map->cells[4].neighbors[i] = v5[i];
-	}
-
-	std::vector<SCell*> v6 = { ptcell4, ptcell8 };
-
-	map->cells[5].nbNeighbors = 2;
-	map->cells[5].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[5].nbNeighbors);
-	for (auto i = 0; i < map->cells[5].nbNeighbors; i++)
-	{
-		map->cells[5].neighbors[i] = v6[i];
-	}
-
-	std::vector<SCell*> v7 = { ptcell4 };
-
-	map->cells[6].nbNeighbors = 1;
-	map->cells[6].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[6].nbNeighbors);
-	for (auto i = 0; i < map->cells[6].nbNeighbors; i++)
-	{
-		map->cells[6].neighbors[i] = v7[i];
-	}
-
-	std::vector<SCell*> v8 = { ptcell2, ptcell1 };
-
-	map->cells[7].nbNeighbors = 2;
-	map->cells[7].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[7].nbNeighbors);
-	for (auto i = 0; i < map->cells[7].nbNeighbors; i++)
-	{
-		map->cells[7].neighbors[i] = v8[i];
-	}
-
-	std::vector<SCell*> v9 = { ptcell3, ptcell5, ptcell9 };
-
-
-	map->cells[8].nbNeighbors = 3;
-	map->cells[8].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[8].nbNeighbors);
-	for (auto i = 0; i < map->cells[8].nbNeighbors; i++)
-	{
-		map->cells[8].neighbors[i] = v9[i];
-	}
-
-	std::vector<SCell*> v10 = { ptcell8 };
-
-	map->cells[9].nbNeighbors = 1;
-	map->cells[9].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[9].nbNeighbors);
-	for (auto i = 0; i < map->cells[9].nbNeighbors; i++)
-	{
-		map->cells[9].neighbors[i] = v10[i];
-	}
-}
-
-bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID) {
-	const SCell& cellFrom = map->cells[turn->cellFrom];
-	const SCellInfo& cellInfoFrom = state->cells[cellFrom.infos.id];
-	const SCell& cellTo = map->cells[turn->cellTo];
-	const SCellInfo& cellInfoTo = state->cells[cellTo.infos.id];
-
-	if (cellInfoTo.owner == playerID ||		// Si on s'attaque soi-même
-		cellInfoFrom.owner != playerID ||	// Si on ne possède pas la cellule
-		cellInfoFrom.nbDices <= 1)			// Si on ne possède pas assez de dés
-		return true;
-
-	bool isNeighbor = false;
-	for (int i = 0; i < cellFrom.nbNeighbors; i++) {
-		if (cellFrom.neighbors[i]->infos.id == cellTo.infos.id) {
-			isNeighbor = true;
-			break;
-		}
-	}
-
-	if (!isNeighbor)
-		return true;		// La cellule n'est pas voisine
-
-	return false;	// Le coup est valide
-}
-
-void InitGameState(const SMap *map, SGameState *state)
-{
-	state->cells = (SCellInfo*)malloc(sizeof(SCellInfo)*NB_CELL);
-	for (int i = 0; i < map->nbCells; i++)
-		state->cells[i] = map->cells[i].infos;
-
-	state->nbCells = NB_CELL;
-}
-
-void UpdateGameState(const STurn *turn, SGameState *state)
-{
-	int NbDicesFrom = state->cells[turn->cellFrom].nbDices;
-	int NbDicesTo = state->cells[turn->cellTo].nbDices;
-
-	int TotalFrom = 0;
-	int TotalTo = 0;
-
-	for (int i = 0; i < NbDicesFrom; i++)
-		TotalFrom += (rand() % 5) + 1;
-
-	for (int i = 0; i < NbDicesTo; i++)
-		TotalTo += (rand() % 5) + 1;
-
-	if (TotalFrom > TotalTo)				// si l'attaquant a gagné
-	{
-		state->cells[turn->cellTo].owner = state->cells[turn->cellFrom].owner;
-		state->cells[turn->cellTo].nbDices = state->cells[turn->cellFrom].nbDices - 1;
-		state->cells[turn->cellFrom].nbDices = 1;
-
-	}
-	else									// si l'attaquant a perdu 
-	{
-		state->cells[turn->cellFrom].nbDices = 1;
-	}
-}
 
