@@ -15,6 +15,7 @@ typedef std::map<int, std::set<Coordinates>> MapTerritoire;
 unsigned int setNumberTerritories(unsigned int nb_players);
 std::set<Coordinates> getVoisins(const Coordinates &coord, int L, int C, const Matrix & matrix);
 std::set<Coordinates> getVoisinsDisponibles(const Coordinates &coord, int L, int C, const Matrix & matrix);
+void addNewNeighborsSCell(SMap *smap, int idCell, std::set<Coordinates> listVoisins, const Matrix &matrix);
 
 bool CheckEndInit(Matrix & matrix, MapTerritoire & map, int L, int C);
 bool already_expanded(MapTerritoire & map, Matrix & matrix, int id_territory, int L, int C);

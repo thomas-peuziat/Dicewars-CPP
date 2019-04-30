@@ -139,3 +139,40 @@ bool CheckEndInit(Matrix & matrix, MapTerritoire & map, int L, int C) {
 	return res;
 }
 
+void addNewNeighborsSCell(SMap *smap, int idCell, std::set<Coordinates> listVoisins, const Matrix &matrix)
+{
+	SCell & scell = smap->cells[idCell];
+	std::vector<int> newNeighIDList = {};
+
+
+	for (Coordinates coord : listVoisins)
+	{
+		int idHexagone = matrix[coord.second][coord.second];
+		if (idHexagone != -1 && idHexagone != idCell) {
+			bool alreadyNeighbouring = false;
+			int idVoisin;
+			
+			for (int i = 0; i < scell.nbNeighbors; i++)
+			{
+				idVoisin = scell.neighbors[i]->infos.id;
+				if (idHexagone == idVoisin) {
+					alreadyNeighbouring = true;
+				}
+			}
+
+			if (!alreadyNeighbouring) {
+				newNeighIDList.push_back(idHexagone);
+			}
+		}
+	}
+
+
+	// @TODO:  C'est ici que commence les problèmes 
+	scell.neighbors = (SCell**) realloc(scell.neighbors, sizeof(SCell*)*newNeighIDList.size());
+	scell.nbNeighbors = newNeighIDList.size();
+	int i = 0;
+	for (int id : newNeighIDList) {
+		scell.neighbors[i] = &(smap->cells[id]);
+		i++;
+	}
+}

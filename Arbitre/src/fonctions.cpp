@@ -15,7 +15,7 @@ void ValiderEtat(SMap *map, const SGameState*state)
 		
 }
 
-void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nbPlayers)
+MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nbPlayers)
 {
 
 	Matrix matrix(nbColonnes, std::vector<int>(nbLignes, -1));
@@ -88,8 +88,7 @@ void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nb
 
 					std::set<Coordinates> listVoisins = getVoisins(coord_a, nbLignes, nbColonnes, matrix);
 
-					//listNewNeighborsSCell = checkIfNewNeighbors(listvoisin, k);
-					//addNeighborsToSCell(k, listNewNeighborsSCell);
+					addNewNeighborsSCell(smap, k, listVoisins, matrix);
 
 					//connexite = getMaxConnexite(-1, smap);
 					//if(connexite == nbTeritoires)
@@ -240,6 +239,7 @@ void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nb
 	}*/
 	
 	displayMatrix(nbLignes, nbColonnes, matrix);
+	return map;
 }
 
 bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID) {
