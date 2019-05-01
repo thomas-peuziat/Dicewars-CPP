@@ -160,19 +160,56 @@ void addNewNeighborsSCell(SMap *smap, int idCell, std::set<Coordinates> listVois
 				}
 			}
 
+			for (int id : newNeighIDList) {
+				if (id == idHexagone)
+					alreadyNeighbouring = true;
+			}
+
 			if (!alreadyNeighbouring) {
+				
 				newNeighIDList.push_back(idHexagone);
 			}
 		}
 	}
 
+	if (newNeighIDList.size() > 0) {
+		if (scell.nbNeighbors <= 0) {
+			// Modif nbNeighbors
+			scell.nbNeighbors = newNeighIDList.size();
 
-	// @TODO:  C'est ici que commence les problèmes 
-	scell.neighbors = (SCell**) realloc(scell.neighbors, sizeof(SCell*)*newNeighIDList.size());
-	scell.nbNeighbors = newNeighIDList.size();
-	int i = 0;
-	for (int id : newNeighIDList) {
-		scell.neighbors[i] = &(smap->cells[id]);
-		i++;
+			// Première allocation mémoire de scell.neighbors
+			scell.neighbors = new SCell*[scell.nbNeighbors];
+
+			// Ajout nouveaux voisins
+			int i = 0;
+			for (int id : newNeighIDList) {
+				scell.neighbors[i] = &(smap->cells[id]);
+				i++;
+			}
+		}
+		else {
+
+			// Equivalent realloc car scell.neighbors existe déjà en mémoire
+			SCell** listPtrVoisins = new SCell*[newNeighIDList.size() + scell.nbNeighbors];
+			for (int i = 0; i < scell.nbNeighbors; i++) {
+				listPtrVoisins[i] = scell.neighbors[i];
+			}
+			delete[] scell.neighbors;
+			scell.neighbors = new SCell*[newNeighIDList.size() + scell.nbNeighbors];
+			for (int i = 0; i < scell.nbNeighbors; i++) {
+				scell.neighbors[i] = listPtrVoisins[i];
+			}
+			delete[] listPtrVoisins;
+
+			// Ajout nouveaux voisins
+			int i = 0;
+			for (int id : newNeighIDList) {
+				scell.neighbors[i + scell.nbNeighbors] = &(smap->cells[id]);
+				i++;
+			}
+
+			// Modif nbNeighbors
+			scell.nbNeighbors += newNeighIDList.size();
+		}
 	}
 }
