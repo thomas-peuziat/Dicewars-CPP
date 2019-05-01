@@ -25,37 +25,37 @@ std::set<Coordinates> getVoisins(const Coordinates &coord, int L, int C, const M
 
 	if (isEven(idxLigne))
 	{
-		if (idxColonne - 1 >= 0 && idxLigne - 1 >= 0 && matrix[idxColonne - 1][idxLigne - 1] == -1) {
+		if (idxColonne - 1 >= 0 && idxLigne - 1 >= 0) {
 			list.insert(std::make_pair(idxLigne - 1, idxColonne - 1));
 		}
 
-		if (idxColonne - 1 >= 0 && idxLigne + 1 < L && matrix[idxColonne - 1][idxLigne + 1] == -1) {
+		if (idxColonne - 1 >= 0 && idxLigne + 1 < L) {
 			list.insert(std::make_pair(idxLigne + 1, idxColonne - 1));
 		}
 	}
 	else {
-		if (idxColonne + 1 < C && idxLigne + 1 < L && matrix[idxColonne + 1][idxLigne + 1] == -1) {
+		if (idxColonne + 1 < C && idxLigne + 1 < L) {
 			list.insert(std::make_pair(idxLigne + 1, idxColonne + 1));
 		}
 
-		if (idxColonne + 1 < C && idxLigne - 1 >= 0 && matrix[idxColonne + 1][idxLigne - 1] == -1) {
+		if (idxColonne + 1 < C && idxLigne - 1 >= 0) {
 			list.insert(std::make_pair(idxLigne - 1, idxColonne + 1));
 		}
 	}
 
-	if (idxLigne - 1 >= 0 && matrix[idxColonne][idxLigne - 1] == -1) {
+	if (idxLigne - 1 >= 0) {
 		list.insert(std::make_pair(idxLigne - 1, idxColonne));
 	}
 
-	if (idxColonne + 1 < C && matrix[idxColonne + 1][idxLigne] == -1) {
+	if (idxColonne + 1 < C) {
 		list.insert(std::make_pair(idxLigne, idxColonne + 1));
 	}
 
-	if (idxLigne + 1 < L && matrix[idxColonne][idxLigne + 1] == -1) {
+	if (idxLigne + 1 < L) {
 		list.insert(std::make_pair(idxLigne + 1, idxColonne));
 	}
 
-	if (idxColonne - 1 >= 0 && matrix[idxColonne - 1][idxLigne] == -1) {
+	if (idxColonne - 1 >= 0) {
 		list.insert(std::make_pair(idxLigne, idxColonne - 1));
 	}
 
@@ -147,7 +147,7 @@ void addNewNeighborsSCell(SMap *smap, int idCell, std::set<Coordinates> listVois
 
 	for (Coordinates coord : listVoisins)
 	{
-		int idHexagone = matrix[coord.second][coord.second];
+		int idHexagone = matrix[coord.second][coord.first];
 		if (idHexagone != -1 && idHexagone != idCell) {
 			bool alreadyNeighbouring = false;
 			int idVoisin;
@@ -181,10 +181,42 @@ void addNewNeighborsSCell(SMap *smap, int idCell, std::set<Coordinates> listVois
 			scell.neighbors = new SCell*[scell.nbNeighbors];
 
 			// Ajout nouveaux voisins
-			int i = 0;
+			int j = 0;
 			for (int id : newNeighIDList) {
-				scell.neighbors[i] = &(smap->cells[id]);
-				i++;
+				scell.neighbors[j] = &(smap->cells[id]);
+				j++;
+
+				// Ajout voisin dans la cellule nouvellement voisine
+				if (smap->cells[id].nbNeighbors <= 0) {
+					// Modif nbNeighbors
+					smap->cells[id].nbNeighbors = 1;
+
+					// Première allocation mémoire de scell.neighbors
+					smap->cells[id].neighbors = new SCell*[smap->cells[id].nbNeighbors];
+
+					// Ajout nouveaux voisins
+					smap->cells[id].neighbors[0] = &(scell);
+				}
+				else {
+					// Equivalent realloc car scell.neighbors existe déjà en mémoire
+					SCell** listPtrVoisins = new SCell*[1 + smap->cells[id].nbNeighbors];
+					for (int i = 0; i < smap->cells[id].nbNeighbors; i++) {
+						listPtrVoisins[i] = smap->cells[id].neighbors[i];
+					}
+					delete[] smap->cells[id].neighbors;
+					smap->cells[id].neighbors = new SCell*[1 + smap->cells[id].nbNeighbors];
+					for (int i = 0; i < smap->cells[id].nbNeighbors; i++) {
+						smap->cells[id].neighbors[i] = listPtrVoisins[i];
+					}
+					delete[] listPtrVoisins;
+
+					// Ajout nouveaux voisins
+					smap->cells[id].neighbors[smap->cells[id].nbNeighbors] = &(scell);
+
+					// Modif nbNeighbors
+					smap->cells[id].nbNeighbors += 1;
+				}
+
 			}
 		}
 		else {
@@ -202,10 +234,41 @@ void addNewNeighborsSCell(SMap *smap, int idCell, std::set<Coordinates> listVois
 			delete[] listPtrVoisins;
 
 			// Ajout nouveaux voisins
-			int i = 0;
+			int j = 0;
 			for (int id : newNeighIDList) {
-				scell.neighbors[i + scell.nbNeighbors] = &(smap->cells[id]);
-				i++;
+				scell.neighbors[j + scell.nbNeighbors] = &(smap->cells[id]);
+				j++;
+
+				// Ajout voisin dans la cellule nouvellement voisine
+				if (smap->cells[id].nbNeighbors <= 0) {
+					// Modif nbNeighbors
+					smap->cells[id].nbNeighbors = 1;
+
+					// Première allocation mémoire de scell.neighbors
+					smap->cells[id].neighbors = new SCell*[smap->cells[id].nbNeighbors];
+
+					// Ajout nouveaux voisins
+					smap->cells[id].neighbors[0] = &(scell);
+				}
+				else {
+					// Equivalent realloc car scell.neighbors existe déjà en mémoire
+					SCell** listPtrVoisins = new SCell*[1 + smap->cells[id].nbNeighbors];
+					for (int i = 0; i < smap->cells[id].nbNeighbors; i++) {
+						listPtrVoisins[i] = smap->cells[id].neighbors[i];
+					}
+					delete[] smap->cells[id].neighbors;
+					smap->cells[id].neighbors = new SCell*[1 + smap->cells[id].nbNeighbors];
+					for (int i = 0; i < smap->cells[id].nbNeighbors; i++) {
+						smap->cells[id].neighbors[i] = listPtrVoisins[i];
+					}
+					delete[] listPtrVoisins;
+
+					// Ajout nouveaux voisins
+					smap->cells[id].neighbors[smap->cells[id].nbNeighbors] = &(scell);
+
+					// Modif nbNeighbors
+					smap->cells[id].nbNeighbors += 1;
+				}
 			}
 
 			// Modif nbNeighbors

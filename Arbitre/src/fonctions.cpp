@@ -29,6 +29,16 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 	int c_borne = nbColonnes - 1;
 	int l_borne = nbLignes - 1;
 
+	// Création SCell sans voisins
+	smap->cells = new SCell[nbTerritoires]();
+	smap->nbCells = nbTerritoires;
+	for (auto i = 0; i < smap->nbCells; i++)
+	{
+		smap->cells[i].infos.id = i;
+		smap->cells[i].infos.owner = -1;
+		smap->cells[i].infos.nbDices = 2;
+	}
+
 	// Premier tour -> Création aléatoire des cellules de base
 	for (int i = 0; i < nbTerritoires; i++) {
 
@@ -43,20 +53,14 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 				matrix[c][l] = i;
 				map[i].insert(std::make_pair(l, c));
 
-				// Création SMap sans voisins
-				smap->cells = new SCell[nbTerritoires]();
-				smap->nbCells = nbTerritoires;
-
-				for (auto i = 0; i < smap->nbCells; i++)
-				{
-					smap->cells[i].infos = {};
-					smap->cells[i].infos.id = i;
-					smap->cells[i].infos.owner = -1;
-				}
-
+				//displayMatrix(nbLignes, nbColonnes, matrix);
+				std::set<Coordinates> listVoisins = getVoisins(std::make_pair(l, c), nbLignes, nbColonnes, matrix);
+				addNewNeighborsSCell(smap, i, listVoisins, matrix);
 			}
 		}
 	}
+
+	
 
 	afficherMap(map);
 
@@ -86,9 +90,11 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 					matrix[coord_a.second][coord_a.first] = k;
 					map[k].insert(std::make_pair(coord_a.first, coord_a.second));
 
-					std::set<Coordinates> listVoisins = getVoisins(coord_a, nbLignes, nbColonnes, matrix);
 
+					//displayMatrix(nbLignes, nbColonnes, matrix);
+					std::set<Coordinates> listVoisins = getVoisins(coord_a, nbLignes, nbColonnes, matrix);
 					addNewNeighborsSCell(smap, k, listVoisins, matrix);
+
 
 					//connexite = getMaxConnexite(-1, smap);
 					//if(connexite == nbTeritoires)
