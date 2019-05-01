@@ -4,7 +4,7 @@
 #include <time.h>
 
 #include "Dijkstra.h"
-#include "CalculConnexite.h"
+#include "fonctionsStratDijkstra.h"
 
 
 #ifdef _MSC_VER
@@ -19,7 +19,6 @@ struct SContext
 	SPlayerInfo* infos;
 	const SMap* map;
 	std::vector<int> wayToFollow; //chemin de cellules à suivre pour atteindre l'autres composantes connexes
-	//unsigned int gameTurn;//vérifier si toujours égal au coup précédent
 };
 
 API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *map, SPlayerInfo *info)
@@ -37,6 +36,7 @@ API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *ma
 	ctx->nbPlayers = nbPlayer;
 	ctx->infos = info;
 	ctx->map = map;
+	ctx->wayToFollow = {};
 
 	return(ctx);
 }
@@ -46,25 +46,27 @@ API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *ma
 API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *state, STurn *turn)
 {
 	std::cout << "PlayTurn DIJKSTRA" << std::endl;
+
 	SContext* contexte = static_cast<SContext*>(ctx);
-	SCell *territories = contexte->map->cells;
 	const SMap *map = contexte->map;
 	const int nbCells = map->nbCells;
 	std::vector<int> Predecesseurs = {};
 
 	//si le coup précédent est valide
 	if (gameTurn == contexte->id) {
-		
-		//a supprimer à la fin 
-		//state->nbCells donne le nombre de cell dans la map
-		//std::cout << "Appel InitDijkstra" << std::endl;
-		//initDijkstra(contexte->map, state->nbCells, 0);
 
-		//std::cout << "Fin initDijkstra" << std::endl;
-		// --
+
+		/*
+		
+		TODO : CAS OU VCONNEXITE EST VIDE => return 1 => ca evite de boucler pour rien
+		
+		
+		*/
+
+
 
 		//l'indice correspond à l'id - la valeur correspond à sa composante connexe
-		std::vector<int> vConnexite = calculateConnexite(0, map, state, nbCells);
+		std::vector<int> vConnexite = calculateConnexite(contexte->id, map, state, nbCells);
 		
 		//a supprimer à la fin 
 		for (const int& it : vConnexite) {
@@ -77,12 +79,6 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 		//map contenant le num de la composante en clé et le nombre d'occurences en valeur
 		std::map<unsigned int, unsigned int> nbColor = getMapWithColors(vConnexite);
 		
-		//a supprimer à la fin 
-		//for (auto &it : nbColor) {
-		//	std::cout << "couleur : " << it.first << " occurence : " << it.second << std::endl;
-		//}
-		// --
-
 
 		//nombre maximal de territoire dans une seule composante connexe
 		int maxiConnexite = getMaxConnexite(nbColor);
@@ -140,164 +136,156 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 		}
 		// --
 
-
-		//construction d'une structure repertoriant les cellules attaquantes, les cellules visées et la distance les séparant
-		std::map<unsigned int, std::map<int,int>> mFromToDist;
-		//clé=cellule attaquante ; valeur= map [avec clé=id de cellules visées et valeur=distance jusqu'a une cellule d'arrivée]
+		if (cellToJoin.size() > 0) {
 
 
-		/*
-			Problème :
-			distance entre 2 cell --> dep : 0 - Arr : 6 => 7
-			distance entre 2 cell --> dep : 0 - Arr : 8 => 4
-			distance entre 2 cell --> dep : 1 - Arr : 6 => 10
-			distance entre 2 cell --> dep : 1 - Arr : 8 => 7
-			distance entre 2 cell --> dep : 7 - Arr : 6 => 7
-			distance entre 2 cell --> dep : 7 - Arr : 8 => 4
+			//construction d'une structure repertoriant les cellules attaquantes, les cellules visées et la distance les séparant
+			std::map<unsigned int, std::map<int, int>> mFromToDist;
+			//clé=cellule attaquante ; valeur= map [avec clé=id de cellules visées et valeur=distance jusqu'a une cellule d'arrivée]
 
-			Ici, on peut attaquer la cellule 8 depuis la cellule 0 ou 7 mais on veut toujours avoir le plus de chance donc il nous faut savoir a quel moment on a le plus de dés pour y parvenir
-		*/
-		int distanceMinimale = INT_MAX;
-		int cellToATKWithMiniDistance = -1;
-		int cellDepartWithMiniDistance = -1;
-		int nbApparition = 1; //Calcul le nombre d'apparition de la distance minimale -> pour essayer d'optimiser l'algo et éviter les boucles inutiles
 
-		
+			/*
+				Problème :
+				distance entre 2 cell --> dep : 0 - Arr : 6 => 7
+				distance entre 2 cell --> dep : 0 - Arr : 8 => 4
+				distance entre 2 cell --> dep : 1 - Arr : 6 => 10
+				distance entre 2 cell --> dep : 1 - Arr : 8 => 7
+				distance entre 2 cell --> dep : 7 - Arr : 6 => 7
+				distance entre 2 cell --> dep : 7 - Arr : 8 => 4
 
-		for (const int& it : vIndexeCellFrom) {
-			int cellDepart = it;
-			//ajout de la cellule attaquante
-			mFromToDist.insert({ cellDepart,std::map<int,int>() });
+				Ici, on peut attaquer la cellule 8 depuis la cellule 0 ou 7 mais on veut toujours avoir le plus de chance donc il nous faut savoir a quel moment on a le plus de dés pour y parvenir
+			*/
+			int distanceMinimale = INT_MAX;
+			int cellToATKWithMiniDistance = -1;
+			int cellDepartWithMiniDistance = -1;
+			int nbApparition = 1; //Calcul le nombre d'apparition de la distance minimale -> pour essayer d'optimiser l'algo et éviter les boucles inutiles
 
-			for (auto iteratorOnCellToJoin : cellToJoin) {//pour toutes les cellules que l'on peut attaquer (parcourt de la map)
-				for (int i = 0; i < iteratorOnCellToJoin.second.size(); i++) { //parcourt du vector qui est clé de la map
-					int cellToATK = iteratorOnCellToJoin.second[i];
-					//calcul de la distance qui les sépare
-					int distanceBetweenCell = initDijkstra(map, nbCells,cellDepart, cellToATK, Predecesseurs);
-					//a supprimer à la fin
-					std::cout << "distance entre 2 cell --> dep : " << cellDepart << " - Arr : " << cellToATK << " => " << distanceBetweenCell << std::endl;
-					// --
-					mFromToDist[cellDepart].insert({ cellToATK, distanceBetweenCell });
 
-					if (distanceMinimale > distanceBetweenCell) { //récupère quelle cellule attaque laquelle avec quelle distance
-						distanceMinimale = distanceBetweenCell;
-						cellToATKWithMiniDistance = cellToATK;
-						cellDepartWithMiniDistance = cellDepart;
-						nbApparition = 1; // la distance mini a changé on réinitialise le compteur
-					}
-					else {
-						if (distanceMinimale == distanceBetweenCell) {
-							nbApparition++;
+
+			for (const int& it : vIndexeCellFrom) {
+				int cellDepart = it;
+				//ajout de la cellule attaquante
+				mFromToDist.insert({ cellDepart,std::map<int,int>() });
+
+				for (auto iteratorOnCellToJoin : cellToJoin) {//pour toutes les cellules que l'on peut attaquer (parcourt de la map)
+					for (int i = 0; i < iteratorOnCellToJoin.second.size(); i++) { //parcourt du vector qui est clé de la map
+						int cellToATK = iteratorOnCellToJoin.second[i];
+						//calcul de la distance qui les sépare
+						int distanceBetweenCell = initDijkstra(map, nbCells, cellDepart, cellToATK, Predecesseurs);
+						//a supprimer à la fin
+						//std::cout << "distance entre 2 cell --> dep : " << cellDepart << " - Arr : " << cellToATK << " => " << distanceBetweenCell << std::endl;
+						// --
+						mFromToDist[cellDepart].insert({ cellToATK, distanceBetweenCell });
+
+						if (distanceMinimale > distanceBetweenCell) { //récupère quelle cellule attaque laquelle avec quelle distance
+							distanceMinimale = distanceBetweenCell;
+							cellToATKWithMiniDistance = cellToATK;
+							cellDepartWithMiniDistance = cellDepart;
+							nbApparition = 1; // la distance mini a changé on réinitialise le compteur
+						}
+						else {
+							if (distanceMinimale == distanceBetweenCell) {
+								nbApparition++;
+							}
 						}
 					}
 				}
 			}
-		}
 
-		/*
-			si nbApparition est supérieur à 1, cela veut dire qu'il nous faut construire les vector contenant toutes les pairs de cellules {ATK, visées}
-			afin de décider en fonction du nombre de dés qui pourra attaquer (les distances seront toutes les mêmes donc pas besoin de les stocker)
-		*/
-		if (nbApparition > 1) {
-			std::vector<std::pair<int, int>> vecCellAtkDef;
+			/*
+				si nbApparition est supérieur à 1, cela veut dire qu'il nous faut construire les vector contenant toutes les pairs de cellules {ATK, visées}
+				afin de décider en fonction du nombre de dés qui pourra attaquer (les distances seront toutes les mêmes donc pas besoin de les stocker)
+			*/
+			if (nbApparition > 1) {
+				std::vector<std::pair<int, int>> vecCellAtkDef;
 
-			for (auto itMap : mFromToDist) {
-				itMap.first;
-				for (auto itMapInterne : itMap.second) {
-					itMapInterne.first;
-					if (distanceMinimale == itMapInterne.second) {
-						vecCellAtkDef.push_back({ itMap.first, itMapInterne.first });//ajout de la cellule attaquante et celle visée
+				for (auto itMap : mFromToDist) {
+					itMap.first;
+					for (auto itMapInterne : itMap.second) {
+						itMapInterne.first;
+						if (distanceMinimale == itMapInterne.second) {
+							vecCellAtkDef.push_back({ itMap.first, itMapInterne.first });//ajout de la cellule attaquante et celle visée
+						}
 					}
 				}
-			}
 
-			int cellDepWithMaxiDices = -1;
-			int cellToATKWithMaxiDices = -1;
+				int cellDepWithMaxiDices = -1;
+				int cellToATKWithMaxiDices = -1;
 
-			int maxiDice = -1;
-			for (auto itVec : vecCellAtkDef) {
-				if (map->cells[itVec.first].infos.nbDices > maxiDice) {
-					maxiDice = map->cells[itVec.first].infos.nbDices;
-					cellDepWithMaxiDices = itVec.first;
-					cellToATKWithMaxiDices = itVec.second;
+				int maxiDice = -1;
+				for (auto itVec : vecCellAtkDef) {
+					if (map->cells[itVec.first].infos.nbDices > maxiDice) {
+						maxiDice = map->cells[itVec.first].infos.nbDices;
+						cellDepWithMaxiDices = itVec.first;
+						cellToATKWithMaxiDices = itVec.second;
+					}
 				}
-			}
-			std::cout << std::endl << std::endl;
-			std::cout << "AVEC VECTOR" << std::endl;
-			if (distanceMinimale < maxiDice/8) {
+				std::cout << std::endl << std::endl;
+				std::cout << "AVEC VECTOR - distance Mini " << distanceMinimale << " DES :" << maxiDice << std::endl;
 				turn->cellFrom = cellDepWithMaxiDices;
-				
+
 				//construction du chemin à suivre
-				int currentCell = cellToATKWithMiniDistance;
-				while (currentCell != cellDepartWithMiniDistance)
-				{
-					contexte->wayToFollow.push_back(currentCell);
-					currentCell = Predecesseurs[currentCell]; //la cellule courante prend la valeur de son précédent
+				constructWayToFollow(contexte->wayToFollow, Predecesseurs, cellDepWithMaxiDices, cellToATKWithMaxiDices);
+
+				turn->cellTo = contexte->wayToFollow[contexte->wayToFollow.size() - 1];
+				
+				if (maxiDice + 1 > map->cells[turn->cellTo].infos.nbDices) {//si on a au moins 1 dé de plus que l'adversaire
+					//on attaque
+					contexte->wayToFollow.pop_back();
+					std::cout << "cellDep => " << cellDepWithMaxiDices << " cellArr => " << cellToATKWithMaxiDices << " nbDice => " << maxiDice << std::endl;
+					return 0;
+				}
+				else {
+					//on attaque en fonction du nbDes
+					std::cout << "J'ATTAQUE PAS DEPUIS DIJKSTRA MAIS NBDES AVEC VECTOR" << std::endl;
+					attaquerEnFonctionNbDes(vIndexeCellFrom, map, turn);
+					contexte->wayToFollow.clear();
+					return 1;
 				}
 
-				turn->cellTo = contexte->wayToFollow[contexte->wayToFollow.size() - 1];//cellToATKWithMaxiDices;
-				contexte->wayToFollow.pop_back();
-				std::cout << "cellDep => " << cellDepWithMaxiDices << " cellArr => " << cellToATKWithMaxiDices << " nbDice => " << maxiDice << std::endl;
-				return 0;
 			}
-			else {
-				std::cout << "nombre de des insuffisants" << std::endl;
-				return 1;
-			}
-		}
-		else { //si 1 seule apparition, on évite de reboucler
-			std::cout << "SANS VECTOR" << std::endl;
-			if (distanceMinimale < map->cells[cellDepartWithMiniDistance].infos.nbDices / 8) {
+			else { //si 1 seule apparition, on évite de reboucler
+				std::cout << "SANS VECTOR - distance MINI : " << distanceMinimale << " DES :" << map->cells[cellDepartWithMiniDistance].infos.nbDices << std::endl;
 				std::cout << "cellDep => " << cellDepartWithMiniDistance << " cellArr => " << cellToATKWithMiniDistance << " nbDice => " << map->cells[cellDepartWithMiniDistance].infos.nbDices << std::endl;
-				
+
 				//construction du chemin à suivre
-				int currentCell = cellToATKWithMiniDistance;
-				while (currentCell != cellDepartWithMiniDistance)
-				{
-					contexte->wayToFollow.push_back(currentCell);
-					currentCell = Predecesseurs[currentCell]; //la cellule courante prend la valeur de son précédent
-				}
+				constructWayToFollow(contexte->wayToFollow, Predecesseurs, cellDepartWithMiniDistance, cellToATKWithMiniDistance);
+
+
+				int nbDiceAttaquant = map->cells[cellDepartWithMiniDistance].infos.nbDices;
+				int nbDiceAttaque = map->cells[contexte->wayToFollow[contexte->wayToFollow.size() - 1]].infos.nbDices;
 				
-				turn->cellFrom = cellDepartWithMiniDistance;
-				turn->cellTo = contexte->wayToFollow[contexte->wayToFollow.size() - 1];//cellToATKWithMiniDistance;
-				contexte->wayToFollow.pop_back();
-				return 0;
-			}
-			else {
-				std::cout << "nombre de des insuffisants pour attaquer" << std::endl;
-				return 1;
-			}
+				if (nbDiceAttaquant + 1 > nbDiceAttaque) {
+					//on attaque
+					turn->cellFrom = cellDepartWithMiniDistance;
+					turn->cellTo = contexte->wayToFollow[contexte->wayToFollow.size() - 1];
+					contexte->wayToFollow.pop_back();
+					return 0;
+				}
+				else {
+					//on attaque en fonction du nombre de des
+					std::cout << "J'ATTAQUE PAS DEPUIS DIJKSTRA MAIS NBDES SANS VECTOR" << std::endl;
+					attaquerEnFonctionNbDes(vIndexeCellFrom, map, turn);
+					contexte->wayToFollow.clear();
+					return 1;
+				}
 
+			}
 		}
+		else {
+			//si cellToJoin == 0
+			//Cas où cellToJoin est vide => dijkstra ne sert a rien et il faut quand meme attaquer
 
-		//a supprimer à la fin
-		//if (cellToATKWithMiniDistance!=-1){
-		//	std::cout << std::endl << std::endl;
-		//	std::cout << "cellDepart? => " << cellFrom << "cellArrivee? => " << cellToATKWithMiniDistance << " distance ? => " << distanceMinimale << std::endl;
-		//}
-		//--
+			std::cout << "ATTAQUE NBDES CAR 1 seule composante connexe " << std::endl;
+
+			attaquerEnFonctionNbDes(vIndexeCellFrom, map, turn);
+
+			//std::cout << "dep : " << turn->cellFrom << " arr : " << turn->cellTo << " diff des => " << diffMaximale << std::endl;
+		}
 	
-
-		//attaque avec la plus grande différence de dés
-
-		//NB : Penser au cas où il ne reste que 2 joueurs avec chacun 1 et 1 seule composante connexe => dijkstra ne sert a rien et il faut quand meme attaquer
-
-
-
-		/*
-			Pour tous nos territoires (ou que la moitié puisqu'on va essayer de tous les rejoindre ? a vérifier)
-				Récupérer un territoire de départ
-				Calculer le plus court chemin avec tous les autres disponibles (même s'ils appartiennent à la même composante connexe)
-
-			Dans le cas ou les plus courts chemins sont égaux
-				Sélectionner le territoire attaquant avec la plus grosse différence de dés par rapport au 1er défenseur
-				attaquer avec le territoire ayant le plus petit nombre de dés
-					CAR - 2 dés contre 1 : environ 74% de chance de gagner
-						- 3 dés contre 2 : environ 69% de chance de gagner
-		*/
-
 	}
-	return 0;
+	contexte->wayToFollow.clear();
+	return 1;
 }
 
 API_EXPORT void EndGame(void *ctx, unsigned int idWinner)
