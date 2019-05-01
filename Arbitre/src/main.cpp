@@ -165,9 +165,8 @@ int main(int argc, char *argv[])
 	updatePoints(nbPlayers, &state, &map);
 	SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
 	
-	/*int a;
-	std::cin >> a;*/
-	// Interblocage lorsque tout le monde ne possède plus qu'un dé sur son territoire
+	int b;
+	std::cin >> b;
 	int fin = 0;
 	int gameTurn = 1;
 	bool win = false;
