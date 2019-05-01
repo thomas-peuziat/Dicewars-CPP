@@ -17,10 +17,11 @@ void ValiderEtat(SMap *map, const SGameState*state)
 
 void InitMap(SMap *map)
 {
-	map->cells = (SCell*)malloc(sizeof(SCell)*NB_CELL);
-	SCell cell[NB_CELL];
+	map->cells = (SCell*)malloc(sizeof(SCell)*map->nbCells);
+	const int nb_cells = map->nbCells;
+	SCell cell[30];
 	std::vector<SCell*> ptcell;
-	for (auto i = 0; i < NB_CELL; i++)
+	for (auto i = 0; i < map->nbCells; i++)
 	{
 		SCell c;
 		c.infos.id = i;
@@ -32,11 +33,11 @@ void InitMap(SMap *map)
 	}
 
 
-	for (auto i = 0; i < NB_CELL; i++)
+	for (auto i = 0; i < map->nbCells; i++)
 	{
 		map->cells[i] = cell[i];
 	}
-	map->nbCells = NB_CELL;
+	map->nbCells = map->nbCells;
 
 
 	SCell* ptcell0 = &map->cells[0];
@@ -169,11 +170,11 @@ bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, in
 
 void InitGameState(const SMap *map, SGameState *state, unsigned int nbPlayer)
 {
-	state->cells = (SCellInfo*)malloc(sizeof(SCellInfo)*NB_CELL);
+	state->cells = (SCellInfo*)malloc(sizeof(SCellInfo)*map->nbCells);
 	for (int i = 0; i < map->nbCells; i++)
 		state->cells[i] = map->cells[i].infos;
 
-	state->nbCells = NB_CELL;
+	state->nbCells = map->nbCells;
 
 	for (int i = 0; i < nbPlayer; i++)
 	{
@@ -237,7 +238,7 @@ int getNbTerritories(int IDPlayer, SGameState *state) {
 
 bool isWin(int idPlayer, SGameState *state)
 {
-	if (getNbTerritories(idPlayer, state) == NB_CELL) {
+	if (getNbTerritories(idPlayer, state) == state->nbCells) {
 		std::cout << "Player " << idPlayer << " win" << std::endl;
 		return true;
 	}
@@ -250,8 +251,8 @@ bool isWin(int idPlayer, SGameState *state)
 int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 {
 	int color = 0;
-	std::vector<int> colorVector(NB_CELL, color);									// Initialisation du vector
-	for (int i = 0; i < NB_CELL; i++)
+	std::vector<int> colorVector(map->nbCells, color);									// Initialisation du vector
+	for (int i = 0; i < map->nbCells; i++)
 	{
 		if (state->cells[i].owner == IdPlayer)									// Le celulle doit être la sienne
 		{
@@ -311,7 +312,7 @@ int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 
 void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<int> &colorVector) {
 
-	for (int i = 0; i < NB_CELL; i++) {
+	for (int i = 0; i < colorVector.size(); i++) {
 		if (colorVector.at(i) == oldColorNumber) {
 			colorVector.at(i) = newColorNumber;
 		}

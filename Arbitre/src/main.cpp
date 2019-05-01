@@ -63,9 +63,9 @@ int main(int argc, char *argv[])
 	pPlayTurn PlayTurn;
 	pEndGame EndGame;
 
-	pInitGame* tab_InitGame = (pInitGame*)malloc(sizeof(pInitGame)*NB_CELL);
-	pPlayTurn* tab_PlayTurn = (pPlayTurn*)malloc(sizeof(pPlayTurn)*NB_CELL);
-	pEndGame* tab_EndGame = (pEndGame*)malloc(sizeof(pEndGame)*NB_CELL);
+	pInitGame* tab_InitGame = (pInitGame*)malloc(sizeof(pInitGame)*nbPlayers);
+	pPlayTurn* tab_PlayTurn = (pPlayTurn*)malloc(sizeof(pPlayTurn)*nbPlayers);
+	pEndGame* tab_EndGame = (pEndGame*)malloc(sizeof(pEndGame)*nbPlayers);
 
 	HLIB hLib;
 	for (int i = 0; i < nbPlayers; i++)
@@ -109,10 +109,12 @@ int main(int argc, char *argv[])
 	SPlayerInfo player[nbPlayers];
 	STurn turn;
 	void *ctx[nbPlayers];
-	//std::map<int, std::set<Coordinates>> maMap;
-	//maMap = initialisationMap();
-	InitMap(&map);
-	InitGameState(&map, &state, nbPlayers);
+	std::map<int, std::set<Coordinates>> maMap;
+	maMap = initialisationMap();
+
+	
+	//InitMap(&map);
+	//InitGameState(&map, &state, nbPlayers);
 
 	
 
@@ -122,13 +124,15 @@ int main(int argc, char *argv[])
 
 	Regions regions;							// vector de vector de pair, donc la grille, à relier à la génération de SMap
 	//LoadDefaultMap(regions);
-	LoadMapTest(regions);
-	//LoadMapPerso(regions, maMap);
+	//LoadMapTest(regions);
+	LoadMapPerso(regions, maMap);
+	
 	SRegions *mapCells = ConvertMap(regions);	// Convert des std::vector< std::vector<std::pair<unsigned int, unsigned int>> > en SRegions*
 	ctxGUI = InitGUI(nbPlayers, mapCells);		
 	DeleteMap(mapCells);						// Après InitGUI
 
-	
+	int a;
+	std::cin >> a;
 
 	for (unsigned int idxStrat = 0; idxStrat < nbPlayers; idxStrat++)
 	{
@@ -159,8 +163,8 @@ int main(int argc, char *argv[])
 	updatePoints(nbPlayers, &state, &map);
 	SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
 	
-	int a;
-	std::cin >> a;
+	/*int a;
+	std::cin >> a;*/
 	// Interblocage lorsque tout le monde ne possède plus qu'un dé sur son territoire
 	int fin = 0;
 	int gameTurn = 1;

@@ -5,7 +5,6 @@
 #include <vector>
 #include <map>
 #include <iostream>
-const int NB_CELL = 10;
 
 void InitMap(SMap *map);
 void RetablirEtat(const SMap *map, SGameState *state);
