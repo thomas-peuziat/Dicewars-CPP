@@ -163,6 +163,9 @@ void Confrontation(const STurn *turn, SGameState *state, SGameTurn* sGameTurn, i
 {
 	int NbDicesFrom = state->cells[turn->cellFrom].nbDices;
 	int NbDicesTo = state->cells[turn->cellTo].nbDices;
+	for (unsigned int i = 0; i < 8; ++i)
+		for (unsigned int j = 0; j < 2; ++j)
+			sGameTurn->dices[j][i] = 0;
 
 	int TotalFrom = 0;
 	int TotalTo = 0;
