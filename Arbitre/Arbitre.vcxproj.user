@@ -9,7 +9,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments> "$(OutDir)Strategie.dll" "$(OutDir)Strategie2.dll" "$(OutDir)StrategieDijkstra.dll" </LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments> "$(OutDir)StrategieDijkstra.dll" "$(OutDir)Strategie.dll" "$(OutDir)Strategie2.dll" "$(OutDir)StrategieDijkstra.dll" </LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
