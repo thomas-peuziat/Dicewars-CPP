@@ -2,7 +2,7 @@
 #include "../../Commun/interface.h"
 #include "../../Commun/library.h"
 #include <vector>
-#include<time.h>
+#include <time.h>
 #include "MapLoader.h"
 #include "../../Commun/interface_gui.h"
 #include "fonctions.h"
@@ -18,7 +18,7 @@
 	}
 
 
-void LoadMapPerso(Regions &regions, Map map) {
+void LoadMapPerso(Regions &regions, MapTerritoire map) {
 	for (auto iterator : map) {
 		std::set<Coordinates> coor = iterator.second;
 		std::vector<std::pair<unsigned int,unsigned int>> monVector;
@@ -109,8 +109,10 @@ int main(int argc, char *argv[])
 	SPlayerInfo player[nbPlayers];
 	STurn turn;
 	void *ctx[nbPlayers];
-	std::map<int, std::set<Coordinates>> maMap;
-	maMap = initialisationMap();
+	//std::map<int, std::set<Coordinates>> maMap;
+	//maMap = initialisationMap();
+	MapTerritoire maMap = InitMap(&map, 30, 30, 30, 3);
+	InitGameState(&map, &state, nbPlayers);
 
 	
 	//InitMap(&map);

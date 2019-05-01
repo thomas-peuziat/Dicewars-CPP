@@ -1,5 +1,5 @@
 #include "fonctions.h"
-
+#include "generation.h"
 
 void RetablirEtat(const SMap *map, SGameState *state)
 {
@@ -15,13 +15,110 @@ void ValiderEtat(SMap *map, const SGameState*state)
 		
 }
 
-void InitMap(SMap *map)
+MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nbPlayers)
 {
-	map->cells = (SCell*)malloc(sizeof(SCell)*map->nbCells);
-	const int nb_cells = map->nbCells;
-	SCell cell[30];
+
+	Matrix matrix(nbColonnes, std::vector<int>(nbLignes, -1));
+	MapTerritoire map;
+
+
+	// Affichage Matrix	
+	//displayMatrix(nbLignes, nbColonnes, matrix);
+
+	// Calcul des bornes pour le random_
+	int c_borne = nbColonnes - 1;
+	int l_borne = nbLignes - 1;
+
+	// Premier tour -> Création aléatoire des cellules de base
+	for (int i = 0; i < nbTerritoires; i++) {
+
+
+		bool check1 = false;
+		while (!check1) {
+			int c = rand() % (c_borne);
+			int l = rand() % (l_borne);
+
+			if (matrix[c][l] == -1) {
+				check1 = true;
+				matrix[c][l] = i;
+				map[i].insert(std::make_pair(l, c));
+
+				// Création SMap sans voisins
+				smap->cells = new SCell[nbTerritoires]();
+				smap->nbCells = nbTerritoires;
+
+				for (auto i = 0; i < smap->nbCells; i++)
+				{
+					smap->cells[i].infos = {};
+					smap->cells[i].infos.id = i;
+					smap->cells[i].infos.owner = -1;
+				}
+
+			}
+		}
+	}
+
+	afficherMap(map);
+
+	bool end;
+	do {
+
+		end = false;
+		for (int k = 0; k < nbTerritoires; k++) {
+			std::set<Coordinates> territory_cells = map.find(k)->second;
+
+			if (!already_expanded(map, matrix, k, nbLignes, nbColonnes)) {
+				std::set<Coordinates> list_base;
+				std::set<Coordinates> list;
+				for (Coordinates coord : territory_cells) {
+					list = getVoisinsDisponibles(coord, nbLignes, nbColonnes, matrix);
+					list_base.insert(list.begin(), list.end());
+				}
+
+				if (!list_base.empty()) {
+					int size_list_base = list_base.size();
+					int id_cell_rd = rand() % (size_list_base);
+					
+					std::set<Coordinates>::iterator it = list_base.begin();
+					std::advance(it, id_cell_rd);
+					Coordinates coord_a = *it;
+
+					matrix[coord_a.second][coord_a.first] = k;
+					map[k].insert(std::make_pair(coord_a.first, coord_a.second));
+
+					std::set<Coordinates> listVoisins = getVoisins(coord_a, nbLignes, nbColonnes, matrix);
+
+					addNewNeighborsSCell(smap, k, listVoisins, matrix);
+
+					//connexite = getMaxConnexite(-1, smap);
+					//if(connexite == nbTeritoires)
+					//		isFullConnexe = true;
+
+
+				}
+
+			}
+			else {
+				end = false;
+			}
+
+			bool check = false;
+
+		
+			//afficherMap(map);
+			//displayMatrix(nbLignes, nbColonnes, matrix);
+		}
+		end = CheckEndInit(matrix, map, nbLignes, nbColonnes);
+		//afficherMap(map);
+		//displayMatrix(nbLignes, nbColonnes, matrix);
+
+	} while (!end);
+
+
+	/* map->cells = (SCell*)malloc(sizeof(SCell)*NB_CELL);
+	SCell cell[NB_CELL];
 	std::vector<SCell*> ptcell;
-	for (auto i = 0; i < map->nbCells; i++)
+	for (auto i = 0; i < NB_CELL; i++)
 	{
 		SCell c;
 		c.infos.id = i;
@@ -33,11 +130,11 @@ void InitMap(SMap *map)
 	}
 
 
-	for (auto i = 0; i < map->nbCells; i++)
+	for (auto i = 0; i < NB_CELL; i++)
 	{
 		map->cells[i] = cell[i];
 	}
-	map->nbCells = map->nbCells;
+	map->nbCells = NB_CELL;
 
 
 	SCell* ptcell0 = &map->cells[0];
@@ -139,7 +236,10 @@ void InitMap(SMap *map)
 	for (auto i = 0; i < map->cells[9].nbNeighbors; i++)
 	{
 		map->cells[9].neighbors[i] = v10[i];
-	}
+	}*/
+	
+	displayMatrix(nbLignes, nbColonnes, matrix);
+	return map;
 }
 
 bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID) {
@@ -170,13 +270,13 @@ bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, in
 
 void InitGameState(const SMap *map, SGameState *state, unsigned int nbPlayer)
 {
-	state->cells = (SCellInfo*)malloc(sizeof(SCellInfo)*map->nbCells);
+	state->cells = (SCellInfo*)malloc(sizeof(SCellInfo)*NB_CELL);
 	for (int i = 0; i < map->nbCells; i++)
 		state->cells[i] = map->cells[i].infos;
 
-	state->nbCells = map->nbCells;
+	state->nbCells = NB_CELL;
 
-	for (int i = 0; i < nbPlayer; i++)
+	for (unsigned int i = 0; i < nbPlayer; i++)
 	{
 		state->points[i] = 0;
 		state->diceStock[i] = 0;
@@ -192,12 +292,6 @@ void Confrontation(const STurn *turn, SGameState *state, SGameTurn* sGameTurn, i
 	int TotalTo = 0;
 
 	int scoreDes;
-
-	// Réinitialisation des dés
-	for (unsigned int i = 0; i < 8; ++i)
-		for (unsigned int j = 0; j < 2; ++j)
-			sGameTurn->dices[j][i] = 0;
-
 
 	for (int i = 0; i < NbDicesFrom; i++) {
 		scoreDes = (rand() % 6) + 1;
@@ -228,7 +322,7 @@ void Confrontation(const STurn *turn, SGameState *state, SGameTurn* sGameTurn, i
 
 int getNbTerritories(int IDPlayer, SGameState *state) {
 	int nbTerr = 0;
-	for (int i = 0; i < state->nbCells; i++)
+	for (unsigned int i = 0; i < state->nbCells; i++)
 	{
 		if (state->cells[i].owner == IDPlayer)
 			nbTerr++;
@@ -238,7 +332,7 @@ int getNbTerritories(int IDPlayer, SGameState *state) {
 
 bool isWin(int idPlayer, SGameState *state)
 {
-	if (getNbTerritories(idPlayer, state) == state->nbCells) {
+	if (getNbTerritories(idPlayer, state) == NB_CELL) {
 		std::cout << "Player " << idPlayer << " win" << std::endl;
 		return true;
 	}
@@ -247,11 +341,71 @@ bool isWin(int idPlayer, SGameState *state)
 	
 }
 
+int getMaxConnexite(int IdPlayer, const SMap * map)
+{
+	int color = 0;
+	std::vector<int> colorVector(NB_CELL, color);									// Initialisation du vector
+	for (int i = 0; i < map->nbCells; i++)
+	{
+		if (map->cells[i].infos.owner == IdPlayer)									// Le celulle doit être la sienne
+		{
+			if (colorVector.at(i) == 0)
+			{
+				color++;
+				colorVector.at(i) = color;
+			}
+			else {
+			}
+
+			for (int j = 0; j < map->cells[i].nbNeighbors; j++)
+			{
+				int neigId = map->cells[i].neighbors[j]->infos.id;
+				if (map->cells[neigId].infos.owner == IdPlayer)									// Le celulle doit être la sienne
+				{
+					int idCell = map->cells[i].neighbors[j]->infos.id;
+					if (colorVector.at(idCell) != 0)
+					{
+						if (colorVector.at(idCell) != colorVector.at(i))
+							modifierValuesVector(colorVector.at(idCell), colorVector.at(i), colorVector);
+					}
+					else {
+						colorVector.at(idCell) = colorVector.at(i);
+					}
+				}
+			}
+
+		}
+	}
+
+	std::map<unsigned int, unsigned int> nbColor;
+
+	for (const int& it : colorVector) {
+		if (it != 0) {
+			auto search = nbColor.find(it);
+			if (search == nbColor.end()) {
+				unsigned int value = it;
+				nbColor.insert({ it, 1 });
+			}
+			else {
+				search->second++;
+			}
+		}
+	}
+
+	unsigned int max = 0;
+	for (auto it : nbColor) {
+		if (it.second > max) {
+			max = it.second;
+		}
+	}
+
+	return max;
+}
 
 int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 {
 	int color = 0;
-	std::vector<int> colorVector(map->nbCells, color);									// Initialisation du vector
+	std::vector<int> colorVector(NB_CELL, color);									// Initialisation du vector
 	for (int i = 0; i < map->nbCells; i++)
 	{
 		if (state->cells[i].owner == IdPlayer)									// Le celulle doit être la sienne
@@ -312,7 +466,7 @@ int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 
 void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<int> &colorVector) {
 
-	for (int i = 0; i < colorVector.size(); i++) {
+	for (int i = 0; i < NB_CELL; i++) {
 		if (colorVector.at(i) == oldColorNumber) {
 			colorVector.at(i) = newColorNumber;
 		}
@@ -326,7 +480,7 @@ void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map)
 
 	// TODO : Optimiser parce qu'on passe plusieurs fois dans toute la map pour tout les joueurs
 	// Faire une struct joueur avec tableau de cellule pour chaque joueur ?
-	for (auto i = 0; i < state->nbCells; i++) {
+	for (unsigned int i = 0; i < state->nbCells; i++) {
 		if (state->cells[i].owner == idPlayer && state->cells[i].nbDices < 8) {
 			TCellPerPlayer.push_back(state->cells[i].id);
 		}
@@ -360,6 +514,6 @@ void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map)
 }
 
 void updatePoints(unsigned int nbPlayers, SGameState *state, const SMap *map) {
-	for (int i =0; i < nbPlayers; i++)
+	for (unsigned int i =0; i < nbPlayers; i++)
 		state->points[i] = getMaxConnexite(i, map, state);
 }
