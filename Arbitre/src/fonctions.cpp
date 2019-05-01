@@ -65,6 +65,8 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 	afficherMap(map);
 
 	bool end;
+	bool isFullConnexe = false;
+	int nbCellAdded = nbTerritoires;
 	do {
 
 		end = false;
@@ -90,15 +92,16 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 					matrix[coord_a.second][coord_a.first] = k;
 					map[k].insert(std::make_pair(coord_a.first, coord_a.second));
 
+					nbCellAdded++;
 
 					//displayMatrix(nbLignes, nbColonnes, matrix);
 					std::set<Coordinates> listVoisins = getVoisins(coord_a, nbLignes, nbColonnes, matrix);
 					addNewNeighborsSCell(smap, k, listVoisins, matrix);
 
-
-					//connexite = getMaxConnexite(-1, smap);
-					//if(connexite == nbTeritoires)
-					//		isFullConnexe = true;
+					
+					int connexite = getMaxConnexite(-1, smap);
+					if(connexite == nbTerritoires)
+						isFullConnexe = true;
 
 
 				}
@@ -118,7 +121,7 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 		//afficherMap(map);
 		//displayMatrix(nbLignes, nbColonnes, matrix);
 
-	} while (!end);
+	} while ((!end) && !(isFullConnexe && (nbCellAdded >= (nbColonnes*nbLignes)*3/4) ));
 
 
 	/* map->cells = (SCell*)malloc(sizeof(SCell)*NB_CELL);
