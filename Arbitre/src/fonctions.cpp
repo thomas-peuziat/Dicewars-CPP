@@ -276,11 +276,11 @@ bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, in
 
 void InitGameState(const SMap *map, SGameState *state, unsigned int nbPlayer)
 {
-	state->cells = (SCellInfo*)malloc(sizeof(SCellInfo)*NB_CELL);
+	state->cells = (SCellInfo*)malloc(sizeof(SCellInfo)*map->nbCells);
 	for (int i = 0; i < map->nbCells; i++)
 		state->cells[i] = map->cells[i].infos;
 
-	state->nbCells = NB_CELL;
+	state->nbCells = map->nbCells;
 
 	for (unsigned int i = 0; i < nbPlayer; i++)
 	{
@@ -338,7 +338,7 @@ int getNbTerritories(int IDPlayer, SGameState *state) {
 
 bool isWin(int idPlayer, SGameState *state)
 {
-	if (getNbTerritories(idPlayer, state) == NB_CELL) {
+	if (getNbTerritories(idPlayer, state) == state->nbCells) {
 		std::cout << "Player " << idPlayer << " win" << std::endl;
 		return true;
 	}
@@ -350,7 +350,7 @@ bool isWin(int idPlayer, SGameState *state)
 int getMaxConnexite(int IdPlayer, const SMap * map)
 {
 	int color = 0;
-	std::vector<int> colorVector(NB_CELL, color);									// Initialisation du vector
+	std::vector<int> colorVector(map->nbCells, color);									// Initialisation du vector
 	for (int i = 0; i < map->nbCells; i++)
 	{
 		if (map->cells[i].infos.owner == IdPlayer)									// Le celulle doit être la sienne
@@ -411,7 +411,7 @@ int getMaxConnexite(int IdPlayer, const SMap * map)
 int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 {
 	int color = 0;
-	std::vector<int> colorVector(NB_CELL, color);									// Initialisation du vector
+	std::vector<int> colorVector(map->nbCells, color);									// Initialisation du vector
 	for (int i = 0; i < map->nbCells; i++)
 	{
 		if (state->cells[i].owner == IdPlayer)									// Le celulle doit être la sienne
@@ -472,7 +472,7 @@ int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 
 void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<int> &colorVector) {
 
-	for (int i = 0; i < NB_CELL; i++) {
+	for (int i = 0; i < colorVector.size(); i++) {
 		if (colorVector.at(i) == oldColorNumber) {
 			colorVector.at(i) = newColorNumber;
 		}
