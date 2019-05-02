@@ -21,7 +21,7 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 	Matrix matrix(nbColonnes, std::vector<int>(nbLignes, -1));
 	MapTerritoire map;
 
-	std::cout << "Génération d'une map de " << nbLignes << " par " << nbColonnes << " cases contenant " << nbTerritoires << " territoires et " << nbPlayers << " joueurs." << std::endl;
+	std::cout << "Generation d'une map de " << nbLignes << " par " << nbColonnes << " cases contenant " << nbTerritoires << " territoires et " << nbPlayers << " joueurs." << std::endl;
 
 	// Calcul des bornes pour le random_
 	int c_borne = nbColonnes - 1;
@@ -97,7 +97,7 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 				}
 
 				if(nbCellAdded % 100 == 0)
-					std::cout << "Cases générées : " << nbCellAdded << " (sur " << (nbColonnes*nbLignes) * 3 / 4 << "cases, environ)." << std::endl;
+					std::cout << "Cases generees : " << nbCellAdded << " (sur " << (nbColonnes*nbLignes) * 3 / 4 << "cases, environ)." << std::endl;
 
 			}
 			else {
@@ -115,7 +115,7 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 		smap->cells[i].infos.owner = i % nbPlayers;
 	}
 	
-	std::cout << "Matrice générée :" << std::endl;
+	std::cout << "Matrice generee :" << std::endl;
 	displayMatrix(nbLignes, nbColonnes, matrix);
 
 	return map;

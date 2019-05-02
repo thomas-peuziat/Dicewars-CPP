@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 	std::vector<SPlayerInfo> player(nbPlayers);
 	STurn turn;
 	std::vector<void *> ctx(nbPlayers);
-	MapTerritoire maMap = InitMap(&map, 10, 10, 10, nbPlayers);
+	MapTerritoire maMap = InitMap(&map, 25, 30, 30, nbPlayers);
 	InitGameState(&map, &state, nbPlayers);
 
 	void *ctxGUI;
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 	ctxGUI = InitGUI(nbPlayers, mapCells);		
 	DeleteMap(mapCells);						// Après InitGUI
 
-	std::cout << "Pour lancer le jeu, pensez à actualiser localhost:5678 puis appuyez sur une touche et appuyez sur Entrée." << std::endl;
+	std::cout << "Pour lancer le jeu, pensez a actualiser localhost:5678 puis appuyez sur une touche et appuyez sur Entree." << std::endl;
 	int waiting;
 	std::cin >> waiting;
 
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
 	int winnerPlayer = -1;
 
 	std::cout << "========== JEU LANCE ===========" << std::endl;
-	std::cout << "(Vérifiez localhost:5678)" << std::endl;
+	std::cout << "(Verifiez localhost:5678)" << std::endl;
 
 	idTurn++;
 	do {
