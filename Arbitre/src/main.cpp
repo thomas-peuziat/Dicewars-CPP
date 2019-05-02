@@ -105,9 +105,9 @@ int main(int argc, char *argv[])
 	
 	SMap map;
 	SGameState state;
-	std::vector<SPlayerInfo> player;
+	std::vector<SPlayerInfo> player(nbPlayers);
 	STurn turn;
-	std::vector<void *> ctx;
+	std::vector<void *> ctx(nbPlayers);
 	//std::map<int, std::set<Coordinates>> maMap;
 	//maMap = initialisationMap();
 	MapTerritoire maMap = InitMap(&map, 10, 10, 10, nbPlayers);
