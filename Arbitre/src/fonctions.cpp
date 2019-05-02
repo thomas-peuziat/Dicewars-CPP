@@ -93,7 +93,12 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 					if(connexite == nbTerritoires)
 						isFullConnexe = true;
 
+					
+
 				}
+
+				if(nbCellAdded % 100 == 0)
+					std::cout << "nbCellAdded: " << nbCellAdded << std::endl;
 
 			}
 			else {
