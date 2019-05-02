@@ -1,4 +1,4 @@
-#include "CalculConnexite.h"
+#include "fonctionsStratDijkstra.h"
 
 
 std::vector<int> calculateConnexite(int IdPlayer, const SMap * map, const SGameState * state, const int nbCells)
@@ -75,6 +75,37 @@ void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<in
 	for (int i = 0; i < nbCells; i++) {
 		if (colorVector.at(i) == oldColorNumber) {
 			colorVector.at(i) = newColorNumber;
+		}
+	}
+}
+
+
+void constructWayToFollow(std::vector<int> &wayToFollow, std::vector<int> &pred, int cellDep, int cellArr) {
+	int currentCell = cellArr;
+	while (currentCell != cellDep)
+	{
+		wayToFollow.push_back(currentCell);
+		currentCell = pred[currentCell]; //la cellule courante prend la valeur de son précédent
+	}
+}
+
+void attaquerEnFonctionNbDes(std::vector<int>& vIndexeCellFrom, const SMap* map, STurn* turn) {
+	int diffMaximale = -1;
+	int diffDes = 0;
+	int desCellAtk = 0;
+	int desCellDef = 0;
+	for (const int& i : vIndexeCellFrom) {
+		//std::cout << "une cell que je possede -> " << i << std::endl;
+		for (int j = 0; j < map->cells[i].nbNeighbors; j++) {
+			//std::cout << "	une cellule voisine a attaquer -> " << map->cells[i].neighbors[j]->infos.id << std::endl;
+			desCellAtk = map->cells[i].infos.nbDices;
+			desCellDef = map->cells[i].neighbors[j]->infos.nbDices;
+			diffDes = desCellAtk - desCellDef;
+			if ((diffDes > diffMaximale) && (diffDes > 0)) {
+				diffMaximale = diffDes;
+				turn->cellFrom = i;
+				turn->cellTo = map->cells[i].neighbors[j]->infos.id;
+			}
 		}
 	}
 }
