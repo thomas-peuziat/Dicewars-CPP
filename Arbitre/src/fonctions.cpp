@@ -166,6 +166,8 @@ void Confrontation(const STurn *turn, SGameState *state, SGameTurn* sGameTurn, i
 {
 	int NbDicesFrom = state->cells[turn->cellFrom].nbDices;
 	int NbDicesTo = state->cells[turn->cellTo].nbDices;
+
+	// Remise à zéro du tableau du tirage des dés
 	for (unsigned int i = 0; i < 8; ++i)
 		for (unsigned int j = 0; j < 2; ++j)
 			sGameTurn->dices[j][i] = 0;
@@ -175,12 +177,13 @@ void Confrontation(const STurn *turn, SGameState *state, SGameTurn* sGameTurn, i
 
 	int scoreDes;
 
+	// Tirage des dés de la cellule attaquante
 	for (int i = 0; i < NbDicesFrom; i++) {
 		scoreDes = (rand() % 6) + 1;
 		TotalFrom += scoreDes;
 		sGameTurn->dices[0][i] = scoreDes;
 	}
-
+	// Tirage des dés de la cellule attaquée
 	for (int i = 0; i < NbDicesTo; i++) {
 		scoreDes = (rand() % 6) + 1;
 		TotalTo += scoreDes;
@@ -239,19 +242,23 @@ int getMaxConnexite(int IdPlayer, const SMap * map)
 			}
 			else {
 			}
-
+			// Pour chaque voisin de la celulle
 			for (int j = 0; j < map->cells[i].nbNeighbors; j++)
 			{
 				int neigId = map->cells[i].neighbors[j]->infos.id;
 				if (map->cells[neigId].infos.owner == IdPlayer)				// Le celulle doit être la sienne
 				{
 					int idCell = map->cells[i].neighbors[j]->infos.id;
+					
+					// Si la couleur est différente de 0
 					if (colorVector.at(idCell) != 0)
 					{
+						// Modification de la couleur de tout les territoires portant cette couleur
 						if (colorVector.at(idCell) != colorVector.at(i))
 							modifierValuesVector(colorVector.at(idCell), colorVector.at(i), colorVector);
 					}
 					else {
+						// Maj de la couleur du territoire avec celle de son voisin
 						colorVector.at(idCell) = colorVector.at(i);
 					}
 				}
@@ -262,19 +269,23 @@ int getMaxConnexite(int IdPlayer, const SMap * map)
 
 	std::map<unsigned int, unsigned int> nbColor;
 
+	// Parcours du vector de couleur
 	for (const int& it : colorVector) {
 		if (it != 0) {
 			auto search = nbColor.find(it);
 			if (search == nbColor.end()) {
+				// Si la couleur n'est pas déjà présente dans la map : insertion
 				unsigned int value = it;
 				nbColor.insert({ it, 1 });
 			}
 			else {
+				// Incrémentation du nombre d'occurence dans la map
 				search->second++;
 			}
 		}
 	}
 
+	// Recherche du plus grand nombre d'occurence dans la map
 	unsigned int max = 0;
 	for (auto it : nbColor) {
 		if (it.second > max) {
@@ -301,18 +312,23 @@ int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 			else {
 			}
 
+			// Pour chaque voisin de la celulle
 			for (int j = 0; j < map->cells[i].nbNeighbors; j++)
 			{
 				int neigId = map->cells[i].neighbors[j]->infos.id;
-				if (state->cells[neigId].owner == IdPlayer)			// Le celulle doit être la sienne
+				if (state->cells[neigId].owner == IdPlayer)				// Le celulle doit être la sienne
 				{
 					int idCell = map->cells[i].neighbors[j]->infos.id;
+
+					// Si la couleur est différente de 0
 					if (colorVector.at(idCell) != 0)
 					{
+						// Modification de la couleur de tout les territoires portant cette couleur
 						if (colorVector.at(idCell) != colorVector.at(i))
 							modifierValuesVector(colorVector.at(idCell), colorVector.at(i), colorVector);
 					}
 					else {
+						// Maj de la couleur du territoire avec celle de son voisin
 						colorVector.at(idCell) = colorVector.at(i);
 					}
 				}
@@ -323,19 +339,23 @@ int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 
 	std::map<unsigned int, unsigned int> nbColor;
 
+	// Parcours du vector de couleur
 	for (const int& it : colorVector) {
 		if (it != 0) {
 			auto search = nbColor.find(it);
 			if (search == nbColor.end()) {
+				// Si la couleur n'est pas déjà présente dans la map : insertion
 				unsigned int value = it;
 				nbColor.insert({ it, 1 });
 			}
 			else {
+				// Incrémentation du nombre d'occurence dans la map
 				search->second++;
 			}
 		}
 	}
 
+	// Recherche du plus grand nombre d'occurence dans la map
 	unsigned int max = 0;
 	for (auto it : nbColor) {
 		if (it.second > max) {
