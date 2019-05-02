@@ -63,9 +63,9 @@ int main(int argc, char *argv[])
 	pPlayTurn PlayTurn;
 	pEndGame EndGame;
 
-	pInitGame* tab_InitGame = (pInitGame*)malloc(sizeof(pInitGame)*NB_CELL);
-	pPlayTurn* tab_PlayTurn = (pPlayTurn*)malloc(sizeof(pPlayTurn)*NB_CELL);
-	pEndGame* tab_EndGame = (pEndGame*)malloc(sizeof(pEndGame)*NB_CELL);
+	pInitGame* tab_InitGame = (pInitGame*)malloc(sizeof(pInitGame)*nbPlayers);
+	pPlayTurn* tab_PlayTurn = (pPlayTurn*)malloc(sizeof(pPlayTurn)*nbPlayers);
+	pEndGame* tab_EndGame = (pEndGame*)malloc(sizeof(pEndGame)*nbPlayers);
 
 	HLIB hLib;
 	for (int i = 0; i < nbPlayers; i++)
@@ -111,8 +111,12 @@ int main(int argc, char *argv[])
 	void *ctx[nbPlayers];
 	//std::map<int, std::set<Coordinates>> maMap;
 	//maMap = initialisationMap();
-	InitMap(&map);
+	MapTerritoire maMap = InitMap(&map, 10, 10, 10, nbPlayers);
 	InitGameState(&map, &state, nbPlayers);
+
+	
+	//InitMap(&map);
+	//InitGameState(&map, &state, nbPlayers);
 
 	
 
@@ -122,13 +126,15 @@ int main(int argc, char *argv[])
 
 	Regions regions;							// vector de vector de pair, donc la grille, à relier à la génération de SMap
 	//LoadDefaultMap(regions);
-	LoadMapTest(regions);
-	//LoadMapPerso(regions, maMap);
+	//LoadMapTest(regions);
+	LoadMapPerso(regions, maMap);
+	
 	SRegions *mapCells = ConvertMap(regions);	// Convert des std::vector< std::vector<std::pair<unsigned int, unsigned int>> > en SRegions*
 	ctxGUI = InitGUI(nbPlayers, mapCells);		
 	DeleteMap(mapCells);						// Après InitGUI
 
-	
+	int a;
+	std::cin >> a;
 
 	for (unsigned int idxStrat = 0; idxStrat < nbPlayers; idxStrat++)
 	{
@@ -156,12 +162,11 @@ int main(int argc, char *argv[])
 	for (unsigned int i = 0; i < 8; ++i)
 		for (unsigned int j = 0; j < 2; ++j)
 			sGameTurn.dices[j][i] = 0;
-	
+	updatePoints(nbPlayers, &state, &map);
 	SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
 	
-	int a;
-	std::cin >> a;
-	// Interblocage lorsque tout le monde ne possède plus qu'un dé sur son territoire
+	int b;
+	std::cin >> b;
 	int fin = 0;
 	int gameTurn = 1;
 	bool win = false;
@@ -187,7 +192,7 @@ int main(int argc, char *argv[])
 						
 						/*int a;
 						std::cin >> a;*/
-						//std::this_thread::sleep_for(std::chrono::seconds(2));
+						std::this_thread::sleep_for(std::chrono::seconds(3));
 					}		
 					else {
 						gameTurn++;
@@ -205,8 +210,8 @@ int main(int argc, char *argv[])
 				int nbDes = state.points[i];
 				std::cout << nbDes << std::endl;
 				distributionDes(i, nbDes, &state, &map);
-				SetGameState(ctxGUI, idTurn, &state);
 			}
+			SetGameState(ctxGUI, idTurn, &state);
 			if (win)
 				break;
 			
@@ -222,10 +227,11 @@ int main(int argc, char *argv[])
 	free(tab_InitGame);
 	free(tab_EndGame);
 
+	std::cout << "avant" << std::endl;
 	UninitGUI(ctxGUI);
-
+	std::cout << "avant2" << std::endl;
 	CLOSELIB(hLib);
-
+	std::cout << "après" << std::endl;
 	return(0);
 }
 

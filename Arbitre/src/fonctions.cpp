@@ -15,19 +15,24 @@ void ValiderEtat(SMap *map, const SGameState*state)
 		
 }
 
-void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nbPlayers)
+MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nbPlayers)
 {
-
 	Matrix matrix(nbColonnes, std::vector<int>(nbLignes, -1));
 	MapTerritoire map;
-
-
-	// Affichage Matrix	
-	displayMatrix(nbLignes, nbColonnes, matrix);
 
 	// Calcul des bornes pour le random_
 	int c_borne = nbColonnes - 1;
 	int l_borne = nbLignes - 1;
+
+	// Création SCell sans voisins
+	smap->cells = new SCell[nbTerritoires]();
+	smap->nbCells = nbTerritoires;
+	for (auto i = 0; i < smap->nbCells; i++)
+	{
+		smap->cells[i].infos.id = i;
+		smap->cells[i].infos.owner = -1;
+		smap->cells[i].infos.nbDices = 4;
+	}
 
 	// Premier tour -> Création aléatoire des cellules de base
 	for (int i = 0; i < nbTerritoires; i++) {
@@ -43,17 +48,8 @@ void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nb
 				matrix[c][l] = i;
 				map[i].insert(std::make_pair(l, c));
 
-				// Création SMap sans voisins
-				smap->cells = new SCell[nbTerritoires]();
-				smap->nbCells = nbTerritoires;
-
-				for (auto i = 0; i < smap->nbCells; i++)
-				{
-					smap->cells[i].infos = {};
-					smap->cells[i].infos.id = i;
-					smap->cells[i].infos.owner = -1;
-				}
-
+				std::set<Coordinates> listVoisins = getVoisins(std::make_pair(l, c), nbLignes, nbColonnes, matrix);
+				addNewNeighborsSCell(smap, i, listVoisins, matrix);
 			}
 		}
 	}
@@ -61,6 +57,8 @@ void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nb
 	afficherMap(map);
 
 	bool end;
+	bool isFullConnexe = false;
+	int nbCellAdded = nbTerritoires;
 	do {
 
 		end = false;
@@ -71,18 +69,13 @@ void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nb
 				std::set<Coordinates> list_base;
 				std::set<Coordinates> list;
 				for (Coordinates coord : territory_cells) {
-					if (isEven(coord.first)) {
-						list = even_coordinates(coord, nbLignes, nbColonnes, matrix);
-					}
-					else {
-						list = odd_coordinates(coord, nbLignes, nbColonnes, matrix);
-					}
+					list = getVoisinsDisponibles(coord, nbLignes, nbColonnes, matrix);
 					list_base.insert(list.begin(), list.end());
 				}
 
 				if (!list_base.empty()) {
 					int size_list_base = list_base.size();
-					int id_cell_rd = rand() % (size_list_base - 0) + 0;
+					int id_cell_rd = rand() % (size_list_base);
 					
 					std::set<Coordinates>::iterator it = list_base.begin();
 					std::advance(it, id_cell_rd);
@@ -91,14 +84,14 @@ void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nb
 					matrix[coord_a.second][coord_a.first] = k;
 					map[k].insert(std::make_pair(coord_a.first, coord_a.second));
 
-					//listvoisin = listVoisin(coord_a);
-					//listNewNeighborsSCell = checkIfNewNeighbors(listvoisin, k);
-					//addNeighborsToSCell(k, listNewNeighborsSCell);
+					nbCellAdded++;
 
-					//connexite = getMaxConnexite(-1, smap);
-					//if(connexite == nbTeritoires)
-					//		isFullConnexe = true;
-
+					std::set<Coordinates> listVoisins = getVoisins(coord_a, nbLignes, nbColonnes, matrix);
+					addNewNeighborsSCell(smap, k, listVoisins, matrix);
+					
+					int connexite = getMaxConnexite(-1, smap);
+					if(connexite == nbTerritoires)
+						isFullConnexe = true;
 
 				}
 
@@ -109,140 +102,20 @@ void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nb
 
 			bool check = false;
 
-		
-			afficherMap(map);
-			displayMatrix(nbLignes, nbColonnes, matrix);
 		}
 		end = CheckEndInit(matrix, map, nbLignes, nbColonnes);
-		afficherMap(map);
-		displayMatrix(nbLignes, nbColonnes, matrix);
 
-	} while (!end);
+	} while ((!end) && !(isFullConnexe && (nbCellAdded >= (nbColonnes*nbLignes)*3/4) ));
 
-
-	/* map->cells = (SCell*)malloc(sizeof(SCell)*NB_CELL);
-	SCell cell[NB_CELL];
-	std::vector<SCell*> ptcell;
-	for (auto i = 0; i < NB_CELL; i++)
-	{
-		SCell c;
-		c.infos.id = i;
-		c.infos.owner = rand() % 3;
-		std::cout << c.infos.owner << std::endl;
-		c.infos.nbDices = rand() % 3 + 1;
-		cell[i] = c;
-
+	for (int i = 0; i < smap->nbCells; i++) {
+		smap->cells[i].infos.owner = i % nbPlayers;
 	}
+	
+	displayMatrix(nbLignes, nbColonnes, matrix);
 
 
-	for (auto i = 0; i < NB_CELL; i++)
-	{
-		map->cells[i] = cell[i];
-	}
-	map->nbCells = NB_CELL;
 
-
-	SCell* ptcell0 = &map->cells[0];
-	SCell* ptcell1 = &map->cells[1];
-	SCell* ptcell2 = &map->cells[2];
-	SCell* ptcell3 = &map->cells[3];
-	SCell* ptcell4 = &map->cells[4];
-	SCell* ptcell5 = &map->cells[5];
-	SCell* ptcell6 = &map->cells[6];
-	SCell* ptcell7 = &map->cells[7];
-	SCell* ptcell8 = &map->cells[8];
-	SCell* ptcell9 = &map->cells[9];
-
-
-	std::vector<SCell*> v1 = { ptcell1, ptcell2 };
-	map->cells[0].nbNeighbors = 2;
-	map->cells[0].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[0].nbNeighbors);
-	for (auto i = 0; i < map->cells[0].nbNeighbors; i++)
-	{
-		map->cells[0].neighbors[i] = v1[i];
-	}
-	std::vector<SCell*> v2 = { ptcell0, ptcell7 };
-
-	map->cells[1].nbNeighbors = 2;
-	map->cells[1].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[1].nbNeighbors);
-	for (auto i = 0; i < map->cells[1].nbNeighbors; i++)
-	{
-		map->cells[1].neighbors[i] = v2[i];
-	}
-
-	std::vector<SCell*> v3 = { ptcell0,ptcell7, ptcell3 };
-
-	map->cells[2].nbNeighbors = 3;
-	map->cells[2].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[2].nbNeighbors);
-	for (auto i = 0; i < map->cells[2].nbNeighbors; i++)
-	{
-		map->cells[2].neighbors[i] = v3[i];
-	}
-
-	std::vector<SCell*> v4 = { ptcell2,ptcell4, ptcell8 };
-
-	map->cells[3].nbNeighbors = 3;
-	map->cells[3].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[3].nbNeighbors);
-	for (auto i = 0; i < map->cells[3].nbNeighbors; i++)
-	{
-		map->cells[3].neighbors[i] = v4[i];
-	}
-
-	std::vector<SCell*> v5 = { ptcell6, ptcell5, ptcell3 };
-
-	map->cells[4].nbNeighbors = 3;
-	map->cells[4].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[4].nbNeighbors);
-	for (auto i = 0; i < map->cells[4].nbNeighbors; i++)
-	{
-		map->cells[4].neighbors[i] = v5[i];
-	}
-
-	std::vector<SCell*> v6 = { ptcell4, ptcell8 };
-
-	map->cells[5].nbNeighbors = 2;
-	map->cells[5].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[5].nbNeighbors);
-	for (auto i = 0; i < map->cells[5].nbNeighbors; i++)
-	{
-		map->cells[5].neighbors[i] = v6[i];
-	}
-
-	std::vector<SCell*> v7 = { ptcell4 };
-
-	map->cells[6].nbNeighbors = 1;
-	map->cells[6].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[6].nbNeighbors);
-	for (auto i = 0; i < map->cells[6].nbNeighbors; i++)
-	{
-		map->cells[6].neighbors[i] = v7[i];
-	}
-
-	std::vector<SCell*> v8 = { ptcell2, ptcell1 };
-
-	map->cells[7].nbNeighbors = 2;
-	map->cells[7].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[7].nbNeighbors);
-	for (auto i = 0; i < map->cells[7].nbNeighbors; i++)
-	{
-		map->cells[7].neighbors[i] = v8[i];
-	}
-
-	std::vector<SCell*> v9 = { ptcell3, ptcell5, ptcell9 };
-
-
-	map->cells[8].nbNeighbors = 3;
-	map->cells[8].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[8].nbNeighbors);
-	for (auto i = 0; i < map->cells[8].nbNeighbors; i++)
-	{
-		map->cells[8].neighbors[i] = v9[i];
-	}
-
-	std::vector<SCell*> v10 = { ptcell8 };
-
-	map->cells[9].nbNeighbors = 1;
-	map->cells[9].neighbors = (SCell**)malloc(sizeof(SCell*)*	map->cells[9].nbNeighbors);
-	for (auto i = 0; i < map->cells[9].nbNeighbors; i++)
-	{
-		map->cells[9].neighbors[i] = v10[i];
-	}*/
-
+	return map;
 }
 
 bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID) {
@@ -273,11 +146,11 @@ bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, in
 
 void InitGameState(const SMap *map, SGameState *state, unsigned int nbPlayer)
 {
-	state->cells = (SCellInfo*)malloc(sizeof(SCellInfo)*NB_CELL);
+	state->cells = (SCellInfo*)malloc(sizeof(SCellInfo)*map->nbCells);
 	for (int i = 0; i < map->nbCells; i++)
 		state->cells[i] = map->cells[i].infos;
 
-	state->nbCells = NB_CELL;
+	state->nbCells = map->nbCells;
 
 	for (unsigned int i = 0; i < nbPlayer; i++)
 	{
@@ -290,6 +163,9 @@ void Confrontation(const STurn *turn, SGameState *state, SGameTurn* sGameTurn, i
 {
 	int NbDicesFrom = state->cells[turn->cellFrom].nbDices;
 	int NbDicesTo = state->cells[turn->cellTo].nbDices;
+	for (unsigned int i = 0; i < 8; ++i)
+		for (unsigned int j = 0; j < 2; ++j)
+			sGameTurn->dices[j][i] = 0;
 
 	int TotalFrom = 0;
 	int TotalTo = 0;
@@ -335,7 +211,7 @@ int getNbTerritories(int IDPlayer, SGameState *state) {
 
 bool isWin(int idPlayer, SGameState *state)
 {
-	if (getNbTerritories(idPlayer, state) == NB_CELL) {
+	if (getNbTerritories(idPlayer, state) == state->nbCells) {
 		std::cout << "Player " << idPlayer << " win" << std::endl;
 		return true;
 	}
@@ -347,7 +223,7 @@ bool isWin(int idPlayer, SGameState *state)
 int getMaxConnexite(int IdPlayer, const SMap * map)
 {
 	int color = 0;
-	std::vector<int> colorVector(NB_CELL, color);									// Initialisation du vector
+	std::vector<int> colorVector(map->nbCells, color);									// Initialisation du vector
 	for (int i = 0; i < map->nbCells; i++)
 	{
 		if (map->cells[i].infos.owner == IdPlayer)									// Le celulle doit être la sienne
@@ -408,7 +284,7 @@ int getMaxConnexite(int IdPlayer, const SMap * map)
 int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 {
 	int color = 0;
-	std::vector<int> colorVector(NB_CELL, color);									// Initialisation du vector
+	std::vector<int> colorVector(map->nbCells, color);									// Initialisation du vector
 	for (int i = 0; i < map->nbCells; i++)
 	{
 		if (state->cells[i].owner == IdPlayer)									// Le celulle doit être la sienne
@@ -469,7 +345,7 @@ int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 
 void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<int> &colorVector) {
 
-	for (int i = 0; i < NB_CELL; i++) {
+	for (int i = 0; i < colorVector.size(); i++) {
 		if (colorVector.at(i) == oldColorNumber) {
 			colorVector.at(i) = newColorNumber;
 		}

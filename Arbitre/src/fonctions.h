@@ -1,13 +1,13 @@
 #pragma once
 #include "../../Commun/interface.h"
+#include "generation.h"
 #include "../../Commun/library.h"
 #include "../../Commun/interface_gui.h"
 #include <vector>
 #include <map>
 #include <iostream>
-const int NB_CELL = 10;
 
-void InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nbPlayers);
+MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nbPlayers);
 void RetablirEtat(const SMap *map, SGameState *state);
 void ValiderEtat(SMap *map, const SGameState*state);
 bool ValidAttack(const STurn *turn, const SMap *map, const SGameState *state, int playerID);
