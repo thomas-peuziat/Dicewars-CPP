@@ -1,23 +1,5 @@
 #include "generation.h"
 
-unsigned int setNumberTerritories(unsigned int nb_players) {
-
-	int a = 30 + rand() % (10 - 0) + 0;
-	//std::cout << "v1 = " << a << std::endl;
-
-	int mod = a % nb_players;
-	//std::cout << "mod = " << a << "%" << nb_players << "=" << mod << std::endl;
-
-	int final_nb = a;
-
-	if (mod != 0) {
-		final_nb = a + (nb_players - mod);
-		//std::cout << "final_db = " << a << "+" << (nb_players - mod) << "=" << final_nb << std::endl;
-	}
-
-	return final_nb;
-}
-
 std::set<Coordinates> getVoisins(const Coordinates &coord, int L, int C, const Matrix & matrix) {
 	std::set<Coordinates> list = {};
 	int idxLigne = coord.first;
@@ -99,12 +81,12 @@ bool isEven(int a) {
 
 void afficherMap(const MapTerritoire &m) {
 	for (MapTerritoire::const_iterator it = m.begin(); it != m.end(); ++it) {
-		//std::cout << "key --> " << it->first << std::endl;
+		std::cout << "key --> " << it->first << std::endl;
 		for (Coordinates coord : it->second) {
-			//std::cout << " |   c= " << coord.second << ", l= " << coord.first << std::endl;
+			std::cout << " |   c= " << coord.second << ", l= " << coord.first << std::endl;
 		}
-		//std::cout << std::endl;
-		//std::cout << std::endl;
+		std::cout << std::endl;
+		std::cout << std::endl;
 	}
 }
 

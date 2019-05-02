@@ -18,32 +18,6 @@
 	}
 
 
-void LoadMapPerso(Regions &regions, MapTerritoire map) {
-	for (auto iterator : map) {
-		std::set<Coordinates> coor = iterator.second;
-		std::vector<std::pair<unsigned int,unsigned int>> monVector;
-		for (auto it2 : coor) {
-
-			monVector.push_back(std::make_pair(it2.first, it2.second));
-		}
-		
-		regions.push_back(monVector);
-	}
-}
-
-void LoadMapTest(Regions &regions) {
-	regions.push_back({ {1,1}, {1,2} });
-	regions.push_back({ {2,1} });
-	regions.push_back({ {2,3}, {2,4}, {3,4} });
-	regions.push_back({ {4,5} });
-	regions.push_back({ {5,4}, {6,5} });
-	regions.push_back({ {6,6} });
-	regions.push_back({ {7,4} });
-	regions.push_back({ {3,1}, {3,2}, {3,3} });
-	regions.push_back({ {4,6}, {5,6} });
-	regions.push_back({ {4,7} });
-}
-
 
 int main(int argc, char *argv[])
 {
@@ -109,32 +83,23 @@ int main(int argc, char *argv[])
 	SPlayerInfo player[nbPlayers];
 	STurn turn;
 	void *ctx[nbPlayers];
-	//std::map<int, std::set<Coordinates>> maMap;
-	//maMap = initialisationMap();
-	MapTerritoire maMap = InitMap(&map, 10, 10, 10, nbPlayers);
+	MapTerritoire maMap = InitMap(&map, 25, 20, 20, nbPlayers);
 	InitGameState(&map, &state, nbPlayers);
-
-	
-	//InitMap(&map);
-	//InitGameState(&map, &state, nbPlayers);
-
-	
 
 	void *ctxGUI;
 	SGameTurn sGameTurn;
 	
 
 	Regions regions;							// vector de vector de pair, donc la grille, à relier à la génération de SMap
-	//LoadDefaultMap(regions);
-	//LoadMapTest(regions);
 	LoadMapPerso(regions, maMap);
 	
 	SRegions *mapCells = ConvertMap(regions);	// Convert des std::vector< std::vector<std::pair<unsigned int, unsigned int>> > en SRegions*
 	ctxGUI = InitGUI(nbPlayers, mapCells);		
 	DeleteMap(mapCells);						// Après InitGUI
 
-	int a;
-	std::cin >> a;
+	std::cout << "Pour lancer le jeu, pensez à actualiser localhost:5678 puis appuyez sur une touche et appuyez sur Entrée." << std::endl;
+	int waiting;
+	std::cin >> waiting;
 
 	for (unsigned int idxStrat = 0; idxStrat < nbPlayers; idxStrat++)
 	{
@@ -165,16 +130,17 @@ int main(int argc, char *argv[])
 	updatePoints(nbPlayers, &state, &map);
 	SetGameState(ctxGUI, idTurn, &state);			// A placer au début du jeu, et à chaque tour 
 	
-	int b;
-	std::cin >> b;
 	int fin = 0;
 	int gameTurn = 1;
 	bool win = false;
 
+	std::cout << "========== JEU LANCE ===========" << std::endl;
+	std::cout << "(Vérifiez localhost:5678)" << std::endl;
+
 	idTurn++;
 	do {
 		// Pour chaque joueurs 
-		//mettre i à 1 si on veut tester que la 2eme stratégie
+		// mettre i à 1 si on veut tester que la 2eme stratégie
 		for (int i = 0; i < nbPlayers; i++) {
 			
 			fin = 0;
@@ -184,15 +150,14 @@ int main(int argc, char *argv[])
 				fin = tab_PlayTurn[i](gameTurn, ctx[i], &state, &turn);
 				
 				if (!fin) {
-					if (ValidAttack(&turn, &map, &state, i))								// Attaque valide
+					if (ValidAttack(&turn, &map, &state, i))					// Attaque valide
 					{
 						Confrontation(&turn, &state, &sGameTurn, i);
 						updatePoints(nbPlayers, &state, &map);
 						UpdateGameState(ctxGUI, ++idTurn, &sGameTurn, &state);
-						
-						/*int a;
-						std::cin >> a;*/
-						std::this_thread::sleep_for(std::chrono::seconds(3));
+
+						// Permet d'attendre pour bien voir l'affichage d'un coup
+						std::this_thread::sleep_for(std::chrono::seconds(1));
 					}		
 					else {
 						gameTurn++;
@@ -202,13 +167,12 @@ int main(int argc, char *argv[])
 				win = isWin(i, &state);
 			} while (!fin && !win);
 
-			if (gameTurn != i)																	// Si le tour du joueur a échoué, on retablit les paramètres
+			if (gameTurn != i)					// Si le tour du joueur a échoué, on retablit les paramètres
 				RetablirEtat(&map, &state);
-			else {																			// Sinon on valide les paramètres	
+			else {								// Sinon on valide les paramètres	
 				ValiderEtat(&map, &state);
 				updatePoints(nbPlayers, &state, &map);
 				int nbDes = state.points[i];
-				std::cout << nbDes << std::endl;
 				distributionDes(i, nbDes, &state, &map);
 			}
 			SetGameState(ctxGUI, idTurn, &state);
@@ -218,7 +182,9 @@ int main(int argc, char *argv[])
 		}
 	} while (!win);
 
-	std::cout << "Nb tours " << idTurn << std::endl;
+	std::cout << "Partie finie en " << idTurn << " tours." << std::endl;
+	std::cout << "==========================" << std::endl;
+
 
 	for (unsigned int i = 0; i < nbPlayers; ++i)
 		EndGame(ctx[i], 1);
@@ -227,14 +193,7 @@ int main(int argc, char *argv[])
 	free(tab_InitGame);
 	free(tab_EndGame);
 
-	std::cout << "avant" << std::endl;
 	UninitGUI(ctxGUI);
-	std::cout << "avant2" << std::endl;
 	CLOSELIB(hLib);
-	std::cout << "après" << std::endl;
 	return(0);
 }
-
-
-
-
