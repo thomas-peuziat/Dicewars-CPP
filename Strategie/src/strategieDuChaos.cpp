@@ -21,7 +21,7 @@ API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *ma
 {
 	SContext *ctx = new SContext();
 
-	strcpy(info->name, "Stratégie du chaos");
+	strcpy(info->name, "Strategie du chaos");
 	strcpy(info->members[0], "COUTY Killian");
 	strcpy(info->members[1], "DANIEL Florian");
 	strcpy(info->members[2], "GAUDUCHEAU Clement");
