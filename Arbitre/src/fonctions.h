@@ -6,6 +6,8 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include "MapLoader.h"
+
 
 MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonnes, int nbPlayers);
 void RetablirEtat(const SMap *map, SGameState *state);
@@ -20,4 +22,4 @@ int getMaxConnexite(int IdPlayer, const SMap * map);
 void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<int> &colorVector);
 void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map);
 void updatePoints(unsigned int nbPlayers, SGameState *state, const SMap *map);
-//void PlayGame(const int nbPlayers, void* ctx[], const SGameState *state, const SMap *map, pInitGame* tab_InitGame, pPlayTurn* tab_PlayTurn , pEndGame* tab_InitGame);
+void LoadMapPerso(Regions &regions, MapTerritoire map);

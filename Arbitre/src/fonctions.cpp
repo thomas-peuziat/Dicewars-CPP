@@ -1,6 +1,7 @@
 #include "fonctions.h"
 #include "generation.h"
 
+
 void RetablirEtat(const SMap *map, SGameState *state)
 {
 	for (int i = 0; i < map->nbCells; i++)
@@ -19,6 +20,8 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 {
 	Matrix matrix(nbColonnes, std::vector<int>(nbLignes, -1));
 	MapTerritoire map;
+
+	std::cout << "Génération d'une map de " << nbLignes << " par " << nbColonnes << " cases contenant " << nbTerritoires << " territoires et " << nbPlayers << " joueurs." << std::endl;
 
 	// Calcul des bornes pour le random_
 	int c_borne = nbColonnes - 1;
@@ -53,8 +56,6 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 			}
 		}
 	}
-
-	afficherMap(map);
 
 	bool end;
 	bool isFullConnexe = false;
@@ -95,6 +96,9 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 
 				}
 
+				if(nbCellAdded % 100 == 0)
+					std::cout << "Cases générées : " << nbCellAdded << " (sur " << (nbColonnes*nbLignes) * 3 / 4 << "cases, environ)." << std::endl;
+
 			}
 			else {
 				end = false;
@@ -111,9 +115,8 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 		smap->cells[i].infos.owner = i % nbPlayers;
 	}
 	
+	std::cout << "Matrice générée :" << std::endl;
 	displayMatrix(nbLignes, nbColonnes, matrix);
-
-
 
 	return map;
 }
@@ -212,7 +215,8 @@ int getNbTerritories(int IDPlayer, SGameState *state) {
 bool isWin(int idPlayer, SGameState *state)
 {
 	if (getNbTerritories(idPlayer, state) == state->nbCells) {
-		std::cout << "Player " << idPlayer << " win" << std::endl;
+		std::cout << "========== FIN ===========" << std::endl;
+		std::cout << "Bravo, le joueur " << idPlayer << " gagne la partie." << std::endl;
 		return true;
 	}
 
@@ -223,10 +227,10 @@ bool isWin(int idPlayer, SGameState *state)
 int getMaxConnexite(int IdPlayer, const SMap * map)
 {
 	int color = 0;
-	std::vector<int> colorVector(map->nbCells, color);									// Initialisation du vector
+	std::vector<int> colorVector(map->nbCells, color);			// Initialisation du vector
 	for (int i = 0; i < map->nbCells; i++)
 	{
-		if (map->cells[i].infos.owner == IdPlayer)									// Le celulle doit être la sienne
+		if (map->cells[i].infos.owner == IdPlayer)				// Le celulle doit être la sienne
 		{
 			if (colorVector.at(i) == 0)
 			{
@@ -239,7 +243,7 @@ int getMaxConnexite(int IdPlayer, const SMap * map)
 			for (int j = 0; j < map->cells[i].nbNeighbors; j++)
 			{
 				int neigId = map->cells[i].neighbors[j]->infos.id;
-				if (map->cells[neigId].infos.owner == IdPlayer)									// Le celulle doit être la sienne
+				if (map->cells[neigId].infos.owner == IdPlayer)				// Le celulle doit être la sienne
 				{
 					int idCell = map->cells[i].neighbors[j]->infos.id;
 					if (colorVector.at(idCell) != 0)
@@ -284,10 +288,10 @@ int getMaxConnexite(int IdPlayer, const SMap * map)
 int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 {
 	int color = 0;
-	std::vector<int> colorVector(map->nbCells, color);									// Initialisation du vector
+	std::vector<int> colorVector(map->nbCells, color);			// Initialisation du vector
 	for (int i = 0; i < map->nbCells; i++)
 	{
-		if (state->cells[i].owner == IdPlayer)									// Le celulle doit être la sienne
+		if (state->cells[i].owner == IdPlayer)			// Le celulle doit être la sienne
 		{
 			if (colorVector.at(i) == 0)
 			{
@@ -300,7 +304,7 @@ int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 			for (int j = 0; j < map->cells[i].nbNeighbors; j++)
 			{
 				int neigId = map->cells[i].neighbors[j]->infos.id;
-				if (state->cells[neigId].owner == IdPlayer)									// Le celulle doit être la sienne
+				if (state->cells[neigId].owner == IdPlayer)			// Le celulle doit être la sienne
 				{
 					int idCell = map->cells[i].neighbors[j]->infos.id;
 					if (colorVector.at(idCell) != 0)
@@ -357,8 +361,6 @@ void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map)
 	std::vector<unsigned int> TCellPerPlayer;
 	unsigned int cellPosition;
 
-	// TODO : Optimiser parce qu'on passe plusieurs fois dans toute la map pour tout les joueurs
-	// Faire une struct joueur avec tableau de cellule pour chaque joueur ?
 	for (unsigned int i = 0; i < state->nbCells; i++) {
 		if (state->cells[i].owner == idPlayer && state->cells[i].nbDices < 8) {
 			TCellPerPlayer.push_back(state->cells[i].id);
@@ -395,4 +397,17 @@ void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map)
 void updatePoints(unsigned int nbPlayers, SGameState *state, const SMap *map) {
 	for (unsigned int i =0; i < nbPlayers; i++)
 		state->points[i] = getMaxConnexite(i, map, state);
+}
+
+void LoadMapPerso(Regions &regions, MapTerritoire map) {
+	for (auto iterator : map) {
+		std::set<Coordinates> coor = iterator.second;
+		std::vector<std::pair<unsigned int, unsigned int>> monVector;
+		for (auto it2 : coor) {
+
+			monVector.push_back(std::make_pair(it2.first, it2.second));
+		}
+
+		regions.push_back(monVector);
+	}
 }
