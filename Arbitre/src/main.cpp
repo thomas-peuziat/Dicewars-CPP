@@ -22,16 +22,15 @@
 int main(int argc, char *argv[])
 {
 	srand(time(NULL));
-	const int nbPlayers = 3;
+	const int nbPlayers = (argc - 1);
 	if (argc < 2)
 	{
 		std::cerr << "Usage: " << argv[0] << " libfile" << std::endl;
 		return(-1);
 	}
 
-	std::cout << "Argument de la commande : '" << argv[1] << "'" << std::endl;
-	std::cout << "Argument de la commande : '" << argv[2] << "'" << std::endl;
-	std::cout << "Argument de la commande : '" << argv[3] << "'" << std::endl;
+	for (int i = 1; i < argc; i++)
+		std::cout << "Argument de la commande : '" << argv[i] << "'" << std::endl;
 
 	pInitGame InitGame;
 	pPlayTurn PlayTurn;
@@ -41,7 +40,7 @@ int main(int argc, char *argv[])
 	pPlayTurn* tab_PlayTurn = (pPlayTurn*)malloc(sizeof(pPlayTurn)*nbPlayers);
 	pEndGame* tab_EndGame = (pEndGame*)malloc(sizeof(pEndGame)*nbPlayers);
 
-	HLIB hLib;
+	HLIB hLib = {};
 	for (int i = 0; i < nbPlayers; i++)
 	{
 		if ((hLib = LOADLIB(argv[i + 1])) == nullptr)
@@ -80,10 +79,10 @@ int main(int argc, char *argv[])
 	
 	SMap map;
 	SGameState state;
-	SPlayerInfo player[nbPlayers];
+	std::vector<SPlayerInfo> player;
 	STurn turn;
-	void *ctx[nbPlayers];
-	MapTerritoire maMap = InitMap(&map, 25, 20, 20, nbPlayers);
+	std::vector<void *> ctx;
+	MapTerritoire maMap = InitMap(&map, 10, 10, 10, nbPlayers);
 	InitGameState(&map, &state, nbPlayers);
 
 	void *ctxGUI;
@@ -133,6 +132,7 @@ int main(int argc, char *argv[])
 	int fin = 0;
 	int gameTurn = 1;
 	bool win = false;
+	int winnerPlayer = -1;
 
 	std::cout << "========== JEU LANCE ===========" << std::endl;
 	std::cout << "(Vérifiez localhost:5678)" << std::endl;
@@ -177,6 +177,7 @@ int main(int argc, char *argv[])
 			}
 			SetGameState(ctxGUI, idTurn, &state);
 			if (win)
+				winnerPlayer = i;
 				break;
 			
 		}
@@ -187,7 +188,7 @@ int main(int argc, char *argv[])
 
 
 	for (unsigned int i = 0; i < nbPlayers; ++i)
-		EndGame(ctx[i], 1);
+		tab_EndGame[i](ctx[i], winnerPlayer);
 
 	free(tab_PlayTurn);
 	free(tab_InitGame);
