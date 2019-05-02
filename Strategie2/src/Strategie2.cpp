@@ -85,13 +85,13 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 									diffDesMax = diffDes;
 									nbDesAtk = nbDesAtk;
 								}
-								else {
+								else if(diffDes == 0){
 									int nbTerritories = getNbTerritories(contexte->id, state);;
 									int nbDices = getNbDices(contexte->id, state);
 									int nbDicesMax = nbTerritories * 8;
 									int nbDicesStock = state->diceStock[contexte->id];
 
-									int nbDiceNeed = ((nbDicesMax - nbDices) - myCell.nbDices) + 1;
+									int nbDiceNeed = (((nbDicesMax - nbDices) + myCell.nbDices) - 1);
 
 									if (nbDiceNeed < (nbDicesStock + state->points[contexte->id])) {
 										cellFrom = myCell.id;
