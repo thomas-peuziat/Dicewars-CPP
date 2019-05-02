@@ -24,7 +24,7 @@
     <ClInclude Include="..\Commun\interface.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="src\CalculConnexite.h">
+    <ClInclude Include="src\fonctionsStratDijkstra.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,7 +35,7 @@
     <ClCompile Include="src\strategieDijkstra.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\CalculConnexite.cpp">
+    <ClCompile Include="src\fonctionsStratDijkstra.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

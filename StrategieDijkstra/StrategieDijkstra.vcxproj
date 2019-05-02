@@ -20,12 +20,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Commun\interface.h" />
-    <ClInclude Include="src\CalculConnexite.h" />
+    <ClInclude Include="src\fonctionsStratDijkstra.h" />
     <ClInclude Include="src\Dijkstra.h" />
     <ClInclude Include="src\interface_lib.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\CalculConnexite.cpp" />
+    <ClCompile Include="src\fonctionsStratDijkstra.cpp" />
     <ClCompile Include="src\Dijkstra.cpp" />
     <ClCompile Include="src\strategieDijkstra.cpp" />
   </ItemGroup>
