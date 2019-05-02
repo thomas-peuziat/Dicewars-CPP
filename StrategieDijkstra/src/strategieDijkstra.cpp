@@ -59,6 +59,7 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 		/*
 		
 		TODO : CAS OU VCONNEXITE EST VIDE => return 1 => ca evite de boucler pour rien
+				ligne 248 -> erreur ??
 		
 		
 		*/
