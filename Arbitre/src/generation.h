@@ -12,7 +12,6 @@ typedef std::pair<int, int> Coordinates;
 typedef std::vector<std::vector<int>> Matrix;
 typedef std::map<int, std::set<Coordinates>> MapTerritoire;
 
-unsigned int setNumberTerritories(unsigned int nb_players);
 std::set<Coordinates> getVoisins(const Coordinates &coord, int L, int C, const Matrix & matrix);
 std::set<Coordinates> getVoisinsDisponibles(const Coordinates &coord, int L, int C, const Matrix & matrix);
 void addNewNeighborsSCell(SMap *smap, int idCell, std::set<Coordinates> listVoisins, const Matrix &matrix);

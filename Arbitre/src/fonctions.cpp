@@ -1,6 +1,7 @@
 #include "fonctions.h"
 #include "generation.h"
 
+
 void RetablirEtat(const SMap *map, SGameState *state)
 {
 	for (int i = 0; i < map->nbCells; i++)
@@ -19,6 +20,8 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 {
 	Matrix matrix(nbColonnes, std::vector<int>(nbLignes, -1));
 	MapTerritoire map;
+
+	std::cout << "Génération d'une map de " << nbLignes << " par " << nbColonnes << " cases contenant " << nbTerritoires << " territoires et " << nbPlayers << " joueurs." << std::endl;
 
 	// Calcul des bornes pour le random_
 	int c_borne = nbColonnes - 1;
@@ -53,8 +56,6 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 			}
 		}
 	}
-
-	afficherMap(map);
 
 	bool end;
 	bool isFullConnexe = false;
@@ -95,6 +96,9 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 
 				}
 
+				if(nbCellAdded % 100 == 0)
+					std::cout << "Cases générées : " << nbCellAdded << " (sur " << (nbColonnes*nbLignes) * 3 / 4 << "cases, environ)." << std::endl;
+
 			}
 			else {
 				end = false;
@@ -111,9 +115,8 @@ MapTerritoire InitMap(SMap *smap, int nbTerritoires, int nbLignes, int nbColonne
 		smap->cells[i].infos.owner = i % nbPlayers;
 	}
 	
+	std::cout << "Matrice générée :" << std::endl;
 	displayMatrix(nbLignes, nbColonnes, matrix);
-
-
 
 	return map;
 }
@@ -163,6 +166,8 @@ void Confrontation(const STurn *turn, SGameState *state, SGameTurn* sGameTurn, i
 {
 	int NbDicesFrom = state->cells[turn->cellFrom].nbDices;
 	int NbDicesTo = state->cells[turn->cellTo].nbDices;
+
+	// Remise à zéro du tableau du tirage des dés
 	for (unsigned int i = 0; i < 8; ++i)
 		for (unsigned int j = 0; j < 2; ++j)
 			sGameTurn->dices[j][i] = 0;
@@ -172,12 +177,13 @@ void Confrontation(const STurn *turn, SGameState *state, SGameTurn* sGameTurn, i
 
 	int scoreDes;
 
+	// Tirage des dés de la cellule attaquante
 	for (int i = 0; i < NbDicesFrom; i++) {
 		scoreDes = (rand() % 6) + 1;
 		TotalFrom += scoreDes;
 		sGameTurn->dices[0][i] = scoreDes;
 	}
-
+	// Tirage des dés de la cellule attaquée
 	for (int i = 0; i < NbDicesTo; i++) {
 		scoreDes = (rand() % 6) + 1;
 		TotalTo += scoreDes;
@@ -212,7 +218,8 @@ int getNbTerritories(int IDPlayer, SGameState *state) {
 bool isWin(int idPlayer, SGameState *state)
 {
 	if (getNbTerritories(idPlayer, state) == state->nbCells) {
-		std::cout << "Player " << idPlayer << " win" << std::endl;
+		std::cout << "========== FIN ===========" << std::endl;
+		std::cout << "Bravo, le joueur " << idPlayer << " gagne la partie." << std::endl;
 		return true;
 	}
 
@@ -223,10 +230,10 @@ bool isWin(int idPlayer, SGameState *state)
 int getMaxConnexite(int IdPlayer, const SMap * map)
 {
 	int color = 0;
-	std::vector<int> colorVector(map->nbCells, color);									// Initialisation du vector
+	std::vector<int> colorVector(map->nbCells, color);			// Initialisation du vector
 	for (int i = 0; i < map->nbCells; i++)
 	{
-		if (map->cells[i].infos.owner == IdPlayer)									// Le celulle doit être la sienne
+		if (map->cells[i].infos.owner == IdPlayer)				// Le celulle doit être la sienne
 		{
 			if (colorVector.at(i) == 0)
 			{
@@ -235,19 +242,23 @@ int getMaxConnexite(int IdPlayer, const SMap * map)
 			}
 			else {
 			}
-
+			// Pour chaque voisin de la celulle
 			for (int j = 0; j < map->cells[i].nbNeighbors; j++)
 			{
 				int neigId = map->cells[i].neighbors[j]->infos.id;
-				if (map->cells[neigId].infos.owner == IdPlayer)									// Le celulle doit être la sienne
+				if (map->cells[neigId].infos.owner == IdPlayer)				// Le celulle doit être la sienne
 				{
 					int idCell = map->cells[i].neighbors[j]->infos.id;
+					
+					// Si la couleur est différente de 0
 					if (colorVector.at(idCell) != 0)
 					{
+						// Modification de la couleur de tout les territoires portant cette couleur
 						if (colorVector.at(idCell) != colorVector.at(i))
 							modifierValuesVector(colorVector.at(idCell), colorVector.at(i), colorVector);
 					}
 					else {
+						// Maj de la couleur du territoire avec celle de son voisin
 						colorVector.at(idCell) = colorVector.at(i);
 					}
 				}
@@ -258,19 +269,23 @@ int getMaxConnexite(int IdPlayer, const SMap * map)
 
 	std::map<unsigned int, unsigned int> nbColor;
 
+	// Parcours du vector de couleur
 	for (const int& it : colorVector) {
 		if (it != 0) {
 			auto search = nbColor.find(it);
 			if (search == nbColor.end()) {
+				// Si la couleur n'est pas déjà présente dans la map : insertion
 				unsigned int value = it;
 				nbColor.insert({ it, 1 });
 			}
 			else {
+				// Incrémentation du nombre d'occurence dans la map
 				search->second++;
 			}
 		}
 	}
 
+	// Recherche du plus grand nombre d'occurence dans la map
 	unsigned int max = 0;
 	for (auto it : nbColor) {
 		if (it.second > max) {
@@ -284,10 +299,10 @@ int getMaxConnexite(int IdPlayer, const SMap * map)
 int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 {
 	int color = 0;
-	std::vector<int> colorVector(map->nbCells, color);									// Initialisation du vector
+	std::vector<int> colorVector(map->nbCells, color);			// Initialisation du vector
 	for (int i = 0; i < map->nbCells; i++)
 	{
-		if (state->cells[i].owner == IdPlayer)									// Le celulle doit être la sienne
+		if (state->cells[i].owner == IdPlayer)			// Le celulle doit être la sienne
 		{
 			if (colorVector.at(i) == 0)
 			{
@@ -297,18 +312,23 @@ int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 			else {
 			}
 
+			// Pour chaque voisin de la celulle
 			for (int j = 0; j < map->cells[i].nbNeighbors; j++)
 			{
 				int neigId = map->cells[i].neighbors[j]->infos.id;
-				if (state->cells[neigId].owner == IdPlayer)									// Le celulle doit être la sienne
+				if (state->cells[neigId].owner == IdPlayer)				// Le celulle doit être la sienne
 				{
 					int idCell = map->cells[i].neighbors[j]->infos.id;
+
+					// Si la couleur est différente de 0
 					if (colorVector.at(idCell) != 0)
 					{
+						// Modification de la couleur de tout les territoires portant cette couleur
 						if (colorVector.at(idCell) != colorVector.at(i))
 							modifierValuesVector(colorVector.at(idCell), colorVector.at(i), colorVector);
 					}
 					else {
+						// Maj de la couleur du territoire avec celle de son voisin
 						colorVector.at(idCell) = colorVector.at(i);
 					}
 				}
@@ -319,19 +339,23 @@ int getMaxConnexite(int IdPlayer, const SMap * map, const SGameState * state)
 
 	std::map<unsigned int, unsigned int> nbColor;
 
+	// Parcours du vector de couleur
 	for (const int& it : colorVector) {
 		if (it != 0) {
 			auto search = nbColor.find(it);
 			if (search == nbColor.end()) {
+				// Si la couleur n'est pas déjà présente dans la map : insertion
 				unsigned int value = it;
 				nbColor.insert({ it, 1 });
 			}
 			else {
+				// Incrémentation du nombre d'occurence dans la map
 				search->second++;
 			}
 		}
 	}
 
+	// Recherche du plus grand nombre d'occurence dans la map
 	unsigned int max = 0;
 	for (auto it : nbColor) {
 		if (it.second > max) {
@@ -357,8 +381,6 @@ void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map)
 	std::vector<unsigned int> TCellPerPlayer;
 	unsigned int cellPosition;
 
-	// TODO : Optimiser parce qu'on passe plusieurs fois dans toute la map pour tout les joueurs
-	// Faire une struct joueur avec tableau de cellule pour chaque joueur ?
 	for (unsigned int i = 0; i < state->nbCells; i++) {
 		if (state->cells[i].owner == idPlayer && state->cells[i].nbDices < 8) {
 			TCellPerPlayer.push_back(state->cells[i].id);
@@ -395,4 +417,17 @@ void distributionDes(int idPlayer, int nbDes, SGameState *state, SMap *map)
 void updatePoints(unsigned int nbPlayers, SGameState *state, const SMap *map) {
 	for (unsigned int i =0; i < nbPlayers; i++)
 		state->points[i] = getMaxConnexite(i, map, state);
+}
+
+void LoadMapPerso(Regions &regions, MapTerritoire map) {
+	for (auto iterator : map) {
+		std::set<Coordinates> coor = iterator.second;
+		std::vector<std::pair<unsigned int, unsigned int>> monVector;
+		for (auto it2 : coor) {
+
+			monVector.push_back(std::make_pair(it2.first, it2.second));
+		}
+
+		regions.push_back(monVector);
+	}
 }
