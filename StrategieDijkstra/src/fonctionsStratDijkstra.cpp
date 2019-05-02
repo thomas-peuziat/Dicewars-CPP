@@ -1,6 +1,5 @@
 #include "fonctionsStratDijkstra.h"
 
-
 std::vector<int> calculateConnexite(int IdPlayer, const SMap * map, const SGameState * state, const int nbCells)
 {
 	int color = 0;
@@ -47,7 +46,6 @@ std::map<unsigned int, unsigned int> getMapWithColors(std::vector<int> &colorVec
 		if (it != 0) {
 			auto search = nbColor.find(it);
 			if (search == nbColor.end()) {
-				//unsigned int value = it;  
 				nbColor.insert({ it, 1 });
 			}
 			else {
@@ -89,23 +87,50 @@ void constructWayToFollow(std::vector<int> &wayToFollow, std::vector<int> &pred,
 	}
 }
 
-void attaquerEnFonctionNbDes(std::vector<int>& vIndexeCellFrom, const SMap* map, STurn* turn) {
-	int diffMaximale = -1;
-	int diffDes = 0;
-	int desCellAtk = 0;
-	int desCellDef = 0;
-	for (const int& i : vIndexeCellFrom) {
-		//std::cout << "une cell que je possede -> " << i << std::endl;
-		for (int j = 0; j < map->cells[i].nbNeighbors; j++) {
-			//std::cout << "	une cellule voisine a attaquer -> " << map->cells[i].neighbors[j]->infos.id << std::endl;
-			desCellAtk = map->cells[i].infos.nbDices;
-			desCellDef = map->cells[i].neighbors[j]->infos.nbDices;
-			diffDes = desCellAtk - desCellDef;
-			if ((diffDes > diffMaximale) && (diffDes > 0)) {
-				diffMaximale = diffDes;
-				turn->cellFrom = i;
-				turn->cellTo = map->cells[i].neighbors[j]->infos.id;
+
+
+bool AttaqueCouteQueCoute(int nbCells, int id, const SGameState *state, const SMap* map, STurn* turn) {
+	int cellFrom = -1;
+	int cellTo = -1;
+	int diffDes = -1;
+	int diffDesMax = -1;
+	SCell *territories = map->cells;
+
+	SCellInfo myCell;
+	SCellInfo neighborCell;
+	for (int i = 0; i < nbCells; i++) {
+		if (state->cells[i].owner == id) {
+			// Si la cellule est celle du joueur
+			myCell = state->cells[i];
+			if (myCell.nbDices > 1)
+			{
+				for (int j = 0; j < territories[myCell.id].nbNeighbors; j++) {
+					// Pour chaque voisin de la celulle en cours
+
+					int neigId = territories[myCell.id].neighbors[j]->infos.id;
+					if (state->cells[neigId].owner != (id)) {
+						// La cellule n'est pas au joueur
+						neighborCell = state->cells[neigId];
+						diffDes = myCell.nbDices - neighborCell.nbDices;
+
+						if (diffDes >= 0 && diffDes >= diffDesMax) {
+							cellFrom = myCell.id;
+							cellTo = neighborCell.id;
+							diffDesMax = diffDes;
+						}
+					}
+				}
 			}
+
 		}
+	}
+
+	if (cellFrom != -1 && cellTo != -1) {
+		turn->cellFrom = cellFrom;
+		turn->cellTo = cellTo;
+		return true;
+	}
+	else {
+		return false;
 	}
 }

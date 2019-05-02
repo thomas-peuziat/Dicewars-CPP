@@ -11,7 +11,7 @@ int getMaxConnexite(std::map<unsigned int, unsigned int>& nbColor);
 
 void modifierValuesVector(int oldColorNumber, int newColorNumber, std::vector<int> &colorVector, const int nbCells);
 
-
 void constructWayToFollow(std::vector<int> &wayToFollow, std::vector<int> &pred, int cellDep, int cellArr);
 
-void attaquerEnFonctionNbDes(std::vector<int>& vIndexeCellFrom, const SMap* map, STurn* turn);
+bool AttaqueCouteQueCoute(int nbCells, int id, const SGameState *state, const SMap* map, STurn* turn);
+
