@@ -24,9 +24,15 @@
     <ClInclude Include="src\interface_lib.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="src\Utility.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Strategie2.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

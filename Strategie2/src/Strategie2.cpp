@@ -1,4 +1,5 @@
 #include "interface_lib.h"
+#include "Utility.h"
 #include <cstring>
 #include <iostream>
 #include <time.h>
@@ -48,7 +49,9 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 	int cellFrom = -1;
 	int cellTo = -1;
 	int diffDes = -1;
-	int diffDesMax = -1;
+	int diffDesMax = 0;
+	int nbDesAtk = 10;
+	int nbDesAtkMin = 10;
 
 	SCellInfo myCell;
 	SCellInfo neighborCell;
@@ -72,11 +75,33 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 							// La cellule n'est pas au joueur
 							neighborCell = state->cells[neigId];
 							diffDes = myCell.nbDices - neighborCell.nbDices;
+							nbDesAtk = myCell.nbDices;
 
-							if (diffDes >= 0 && diffDes >= diffDesMax) {
-								cellFrom = myCell.id;
-								cellTo = neighborCell.id;
-								diffDesMax = diffDes;
+							if (diffDes >= diffDesMax && nbDesAtk < nbDesAtkMin ) {
+
+								if (diffDes > 0) {
+									cellFrom = myCell.id;
+									cellTo = neighborCell.id;
+									diffDesMax = diffDes;
+									nbDesAtk = nbDesAtk;
+								}
+								else {
+									int nbTerritories = getNbTerritories(contexte->id, state);;
+									int nbDices = getNbDices(contexte->id, state);
+									int nbDicesMax = nbTerritories * 8;
+									int nbDicesStock = state->diceStock[contexte->id];
+
+									int nbDiceNeed = ((nbDicesMax - nbDices) - myCell.nbDices) + 1;
+
+									if (nbDiceNeed < (nbDicesStock + state->points[contexte->id])) {
+										cellFrom = myCell.id;
+										cellTo = neighborCell.id;
+										diffDesMax = diffDes;
+										nbDesAtk = nbDesAtk;
+									}
+								}
+								
+								
 							}
 						}
 					}
