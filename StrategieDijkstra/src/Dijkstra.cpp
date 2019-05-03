@@ -1,7 +1,7 @@
 #include "Dijkstra.h"
 
 
-//idCellDepart => id de la cellue pour laquelle on cherche le plus court chemin
+//idCellDepart => id de la cellule pour laquelle on cherche le plus court chemin
 //tableau des predecesseurs la valeur correspond à l'id de la cellule précédente
 int initDijkstra(const SMap *map, const int nbCells, int idCellDepart, int idCellArrivee, std::vector<int>& predecesseurs) {
 
@@ -42,7 +42,7 @@ void iterationDijkstra(const SMap* map, int nbCells, std::vector<int> &distance,
 
 		tabVoisinsCell.push_back(map->cells[currentCell].neighbors);	// tableau des voisins d'une cellule
 
-
+		
 		
 		//pour parcourir la liste des voisins d'une cellule
 		int i = 0;

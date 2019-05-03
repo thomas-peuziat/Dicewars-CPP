@@ -1,7 +1,4 @@
 #include "interface_lib.h"
-#include <cstring>
-#include <iostream>
-#include <time.h>
 
 #include "Dijkstra.h"
 #include "fonctionsStratDijkstra.h"
@@ -18,7 +15,6 @@ struct SContext
 	int nbPlayers;
 	SPlayerInfo* infos;
 	const SMap* map;
-
 };
 
 API_EXPORT void* InitGame(unsigned int id, unsigned int nbPlayer, const SMap *map, SPlayerInfo *info)
@@ -49,14 +45,14 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 	SContext* contexte = static_cast<SContext*>(ctx);
 	const SMap *map = contexte->map;
 	const int nbCells = map->nbCells;
-	std::vector<int> Predecesseurs(state->nbCells,-1);
+	std::vector<int> Predecesseurs(state->nbCells,-1); //contiendra les prédécesseurs en fonction d'une cellule de départ et d'arrivée
 	std::vector<int> wayToFollow = {};    //chemin de cellules à suivre pour atteindre l'autres composantes connexes
 	
 	//si le coup précédent est valide
 	if (gameTurn == contexte->id) {
 
 
-		//l'indice correspond à l'id - la valeur correspond à sa composante connexe
+		//l'indice correspond à l'id de la cellule - la valeur correspond à sa composante connexe
 		std::vector<int> vConnexite = calculateConnexite(contexte->id, map, state, nbCells);
 		
 		//si on possède au moins 1 cellule
