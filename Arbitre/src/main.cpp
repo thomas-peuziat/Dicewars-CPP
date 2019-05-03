@@ -139,20 +139,21 @@ int main(int argc, char *argv[])
 
 	idTurn++;
 	do {
+		
 		// Pour chaque joueurs 
 		// mettre i à 1 si on veut tester que la 2eme stratégie
-		for (int i = 0; i < nbPlayers; i++) {
+		for (int p = 0; p < nbPlayers; p++) {
 			
 			fin = 0;
-			gameTurn = i;
+			gameTurn = p;
 			// Tant que le joueur fait un coup valide ou que le joueur a fini son tour
 			do {
-				fin = tab_PlayTurn[i](gameTurn, ctx[i], &state, &turn);
+				fin = tab_PlayTurn[p](gameTurn, ctx[p], &state, &turn);
 				
 				if (!fin) {
-					if (ValidAttack(&turn, &map, &state, i))					// Attaque valide
+					if (ValidAttack(&turn, &map, &state, p))					// Attaque valide
 					{
-						Confrontation(&turn, &state, &sGameTurn, i);
+						Confrontation(&turn, &state, &sGameTurn, p);
 						updatePoints(nbPlayers, &state, &map);
 						UpdateGameState(ctxGUI, ++idTurn, &sGameTurn, &state);
 
@@ -164,22 +165,22 @@ int main(int argc, char *argv[])
 						break;
 					}		
 				}
-				win = isWin(i, &state);
+				win = isWin(p, &state);
 			} while (!fin && !win);
 
-			if (gameTurn != i)					// Si le tour du joueur a échoué, on retablit les paramètres
+			if (gameTurn != p)					// Si le tour du joueur a échoué, on retablit les paramètres
 				RetablirEtat(&map, &state);
 			else {								// Sinon on valide les paramètres	
 				ValiderEtat(&map, &state);
 				updatePoints(nbPlayers, &state, &map);
-				int nbDes = state.points[i];
-				distributionDes(i, nbDes, &state, &map);
+				int nbDes = state.points[p];
+				distributionDes(p, nbDes, &state, &map);
 			}
 			SetGameState(ctxGUI, idTurn, &state);
-			if (win)
-				winnerPlayer = i;
+			if (win) {
+				winnerPlayer = p;
 				break;
-			
+			}
 		}
 	} while (!win);
 
