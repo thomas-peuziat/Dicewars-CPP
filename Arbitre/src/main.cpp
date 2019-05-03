@@ -36,9 +36,9 @@ int main(int argc, char *argv[])
 	pPlayTurn PlayTurn;
 	pEndGame EndGame;
 
-	pInitGame* tab_InitGame = (pInitGame*)malloc(sizeof(pInitGame)*nbPlayers);
-	pPlayTurn* tab_PlayTurn = (pPlayTurn*)malloc(sizeof(pPlayTurn)*nbPlayers);
-	pEndGame* tab_EndGame = (pEndGame*)malloc(sizeof(pEndGame)*nbPlayers);
+	std::vector<pInitGame> tab_InitGame(nbPlayers);
+	std::vector<pPlayTurn> tab_PlayTurn(nbPlayers);
+	std::vector<pEndGame> tab_EndGame(nbPlayers);
 
 	HLIB hLib = {};
 	for (int i = 0; i < nbPlayers; i++)
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 						UpdateGameState(ctxGUI, ++idTurn, &sGameTurn, &state);
 
 						// Permet d'attendre pour bien voir l'affichage d'un coup
-						std::this_thread::sleep_for(std::chrono::seconds(1));
+						std::this_thread::sleep_for(std::chrono::seconds(2));
 					}		
 					else {
 						gameTurn++;
@@ -191,9 +191,6 @@ int main(int argc, char *argv[])
 	for (unsigned int i = 0; i < nbPlayers; ++i)
 		tab_EndGame[i](ctx[i], winnerPlayer);
 
-	free(tab_PlayTurn);
-	free(tab_InitGame);
-	free(tab_EndGame);
 
 	UninitGUI(ctxGUI);
 	CLOSELIB(hLib);
