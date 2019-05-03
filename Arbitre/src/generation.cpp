@@ -1,145 +1,73 @@
 #include "generation.h"
 
-typedef std::pair<int, int> Coordinates;
-typedef std::vector<std::vector<int>> Matrix;
-typedef std::map<int, std::set<Coordinates>> Map;
+std::set<Coordinates> getVoisins(const Coordinates &coord, int L, int C, const Matrix & matrix) {
+	std::set<Coordinates> list = {};
+	int idxLigne = coord.first;
+	int idxColonne = coord.second;
 
-unsigned int setNumberTerritories(unsigned int nb_players) {
-	int a = 30 + rand() % (10 - 0) + 0;
-	std::cout << "v1 = " << a << std::endl;
+	if (isEven(idxLigne))
+	{
+		if (idxColonne - 1 >= 0 && idxLigne - 1 >= 0) {
+			list.insert(std::make_pair(idxLigne - 1, idxColonne - 1));
+		}
 
-	int mod = a % nb_players;
-	std::cout << "mod = " << a << "%" << nb_players << "=" << mod << std::endl;
-
-	int final_nb = a;
-
-	if (mod != 0) {
-		final_nb = a + (nb_players - mod);
-		std::cout << "final_db = " << a << "+" << (nb_players - mod) << "=" << final_nb << std::endl;
-	}
-
-	return final_nb;
-}
-
-
-
-
-std::set<Coordinates> odd_coordinates(const Coordinates &coord, int L, int C, const Matrix & matrix) {
-	std::set<Coordinates> list;
-	int x = coord.first;
-	int y = coord.second;
-
-	if (y - 1 >= 0 && matrix[x][y - 1] == -1) {
-		list.insert(std::make_pair(x, y - 1));
-	}
-
-	if (x + 1 < C && y - 1 >= 0 && matrix[x + 1][y - 1] == -1) {
-		list.insert(std::make_pair(x + 1, y - 1));
-	}
-
-	if (x + 1 < C && matrix[x + 1][y] == -1) {
-		list.insert(std::make_pair(x + 1, y));
-	}
-
-	if (x + 1 < C && y + 1 < L && matrix[x + 1][y + 1] == -1) {
-		list.insert(std::make_pair(x + 1, y + 1));
-	}
-
-	if (y + 1 < L && matrix[x][y + 1] == -1) {
-		list.insert(std::make_pair(x, y + 1));
-	}
-
-	if (x - 1 >= 0 && matrix[x - 1][y] == -1) {
-		list.insert(std::make_pair(x - 1, y));
-	}
-
-	std::cout << "odd_coordinates : " << std::endl;
-	for (auto it = list.begin(); it != list.end(); it++) {
-		std::cout << "(" << it->first << " " << it->second << ")";
-	}
-	std::cout << std::endl;
-
-	return list;
-
-}
-
-std::set<Coordinates> even_coordinates(const Coordinates &coord, int L, int C, const Matrix & matrix) {
-	std::set<Coordinates> list;
-	int x = coord.first;
-	int y = coord.second;
-
-	if (x - 1 >= 0 && y - 1 >= 0 && matrix[x - 1][y - 1] == -1) {
-		list.insert(std::make_pair(x - 1, y - 1));
-	}
-
-	if (y - 1 >= 0 && matrix[x][y - 1] == -1) {
-		list.insert(std::make_pair(x, y - 1));
-	}
-
-	if (x + 1 < C && matrix[x + 1][y] == -1) {
-		list.insert(std::make_pair(x + 1, y));
-	}
-
-	if (y + 1 < L && matrix[x][y + 1] == -1) {
-		list.insert(std::make_pair(x, y + 1));
-	}
-
-	if (x - 1 >= 0 && y + 1 < L && matrix[x - 1][y + 1] == -1) {
-		list.insert(std::make_pair(x - 1, y + 1));
-	}
-
-	if (x - 1 >= 0 && matrix[x - 1][y] == -1) {
-		list.insert(std::make_pair(x - 1, y));
-	}
-
-	std::cout << "(" << x << "," << y << ")" << "even_coordinates : ";
-	for (auto it = list.begin(); it != list.end(); it++) {
-		std::cout << "(" << it->first << " " << it->second << "), ";
-	}
-	std::cout << std::endl;
-
-	return list;
-}
-
-Coordinates pattern_treatment(const Coordinates &coord, int L, int C, const Matrix &matrix) {
-	std::set<Coordinates> list;
-	if (coord.second % 2 == 0) {
-		list = even_coordinates(coord, L, C, matrix);
+		if (idxColonne - 1 >= 0 && idxLigne + 1 < L) {
+			list.insert(std::make_pair(idxLigne + 1, idxColonne - 1));
+		}
 	}
 	else {
-		list = odd_coordinates(coord, L, C, matrix);
+		if (idxColonne + 1 < C && idxLigne + 1 < L) {
+			list.insert(std::make_pair(idxLigne + 1, idxColonne + 1));
+		}
+
+		if (idxColonne + 1 < C && idxLigne - 1 >= 0) {
+			list.insert(std::make_pair(idxLigne - 1, idxColonne + 1));
+		}
 	}
-	int size = list.size();
-	std::cout << size << std::endl;
-	if (list.empty()) {
-		std::cout << "La liste est vide !!" << std::endl;
+
+	if (idxLigne - 1 >= 0) {
+		list.insert(std::make_pair(idxLigne - 1, idxColonne));
 	}
 
-	int rd_id = rand() % list.size();
-	std::cout << "rd_id = " << rd_id << std::endl;
+	if (idxColonne + 1 < C) {
+		list.insert(std::make_pair(idxLigne, idxColonne + 1));
+	}
 
+	if (idxLigne + 1 < L) {
+		list.insert(std::make_pair(idxLigne + 1, idxColonne));
+	}
 
-	auto first = list.begin(); // get iterator to 1st element
+	if (idxColonne - 1 >= 0) {
+		list.insert(std::make_pair(idxLigne, idxColonne - 1));
+	}
 
-	advance(first, rd_id);
-	std::cout << "random values = " << rd_id << "/" << size << std::endl;
-
-	return *first;
-
+	return list;
 }
 
+std::set<Coordinates> getVoisinsDisponibles(const Coordinates &coord, int L, int C, const Matrix & matrix)
+{
+	std::set<Coordinates> listVoisins = getVoisins(coord, L, C, matrix);
+	std::set<Coordinates> listVoisinsDisponibles = {};
+
+	for (Coordinates coord : listVoisins) {
+		if(matrix[coord.second][coord.first] == -1)
+			listVoisinsDisponibles.insert(coord);
+	}
+
+	return listVoisinsDisponibles;
+}
 
 void displayMatrix(const int L, const int C, const Matrix &matrix) {
-	for (int i = 0; i < L; i++) {
-		if (i % 2 == 0) {
+	for (int l = 0; l < L; l++) {
+		if (isEven(l)) {
 			std::cout << "[ ";
 		}
 		else {
 			std::cout << "[  ";
 		}
 
-		for (int j = 0; j < C; j++) {
-			std::cout << " " << matrix[j][i];
+		for (int c = 0; c < C; c++) {
+			std::cout << " " << matrix[c][l];
 		}
 		std::cout << " ]" << std::endl;
 	}
@@ -147,63 +75,26 @@ void displayMatrix(const int L, const int C, const Matrix &matrix) {
 
 }
 
-void rd_expand_cell(const std::set<Coordinates> & list) {
-	std::cout << "list.size= " << list.size() << std::endl;
-}
-
 bool isEven(int a) {
 	return a % 2 == 0;
 }
 
-bool isIsolated(const Matrix &mat, Coordinates coord, int L, int C) {
-	std::set<Coordinates> neighbors;
-	bool res = true;
-	if (isEven(coord.second)) {
-		neighbors = even_coordinates(coord, L, C, mat);
-	}
-	else {
-		neighbors = odd_coordinates(coord, L, C, mat);
-	}
-	std::cout << "issEmpty" << neighbors.empty() << std::endl;
-	for (Coordinates neigh : neighbors) {
-		int x = neigh.first;
-		int y = neigh.second;
-
-		std::cout << "(" << x << "," << y << ":" << mat[x][y] << ") ";
-
-		if (mat[x][y] == -1) {
-			res = false;
-		}
-	}
-	std::cout << std::endl;
-	std::cout << std::endl;
-
-	return res;
-}
-
-void afficherMap(const Map &m) {
-	for (Map::const_iterator it = m.begin(); it != m.end(); ++it) {
+void afficherMap(const MapTerritoire &m) {
+	for (MapTerritoire::const_iterator it = m.begin(); it != m.end(); ++it) {
 		std::cout << "key --> " << it->first << std::endl;
 		for (Coordinates coord : it->second) {
-			std::cout << " |   x= " << coord.first << ", y= " << coord.second << std::endl;
+			std::cout << " |   c= " << coord.second << ", l= " << coord.first << std::endl;
 		}
 		std::cout << std::endl;
 		std::cout << std::endl;
 	}
 }
 
-
-bool already_expanded(Map & map, Matrix & matrix, int id_territory, int L, int C) {
+bool already_expanded(MapTerritoire & map, Matrix & matrix, int id_territory, int L, int C) {
 	bool res = true;
 	for (Coordinates coord : map.find(id_territory)->second) {
-		std::set<Coordinates> list;
-		if (coord.second % 2 == 0) {
-			list = even_coordinates(coord, L, C, matrix);
-		}
-		else {
-			list = odd_coordinates(coord, L, C, matrix);
-		}
-
+		std::set<Coordinates> list = getVoisinsDisponibles(coord, L, C, matrix);
+		
 		if (!list.empty()) {
 			res = false;
 		}
@@ -211,7 +102,7 @@ bool already_expanded(Map & map, Matrix & matrix, int id_territory, int L, int C
 	return res;
 }
 
-bool CheckEndInit(Matrix & matrix, Map & map, int L, int C) {
+bool CheckEndInit(Matrix & matrix, MapTerritoire & map, int L, int C) {
 	bool res = true;
 	int size = map.size();
 	for (int i = 0; i < size; i++) {
@@ -220,12 +111,7 @@ bool CheckEndInit(Matrix & matrix, Map & map, int L, int C) {
 		std::set<Coordinates> list_base;
 		std::set<Coordinates> list;
 		for (Coordinates coord : territory_cells) {
-			if (coord.second % 2 == 0) {
-				list = even_coordinates(coord, L, C, matrix);
-			}
-			else {
-				list = odd_coordinates(coord, L, C, matrix);
-			}
+			list = getVoisinsDisponibles(coord, L, C, matrix);
 			list_base.insert(list.begin(), list.end());
 		}
 		if (!list_base.empty()) {
@@ -235,209 +121,140 @@ bool CheckEndInit(Matrix & matrix, Map & map, int L, int C) {
 	return res;
 }
 
-void initialisationMap() {
-
-	srand((unsigned int)time(NULL));
-
-	int n = 4;
-	int C = 10;
-	int L = 5;
-
-	Matrix matrix(C, std::vector<int>(L, -1));
-	Map map;
-
-	// Affichage Matrix	
-	displayMatrix(L, C, matrix);
-
-	// Calcul des bornes pour le random_
-	int y_borne_rd = L - 1;
-	int x_borne_rd = C - 1;
-
-	// Premier tour -> Création aléatoire des cellules de base
-	for (int i = 0; i < n; i++) {
+void addNewNeighborsSCell(SMap *smap, int idCell, std::set<Coordinates> listVoisins, const Matrix &matrix)
+{
+	SCell & scell = smap->cells[idCell];
+	std::vector<int> newNeighIDList = {};
 
 
-		bool check1 = false;
-		while (!check1) {
-			int x = rand() % (x_borne_rd - 0) + 0;
-			int y = rand() % (y_borne_rd - 0) + 0;
-			std::cout << " Cell de base --> (x = " << x << ",y = " << y << ")" << std::endl;
+	for (Coordinates coord : listVoisins)
+	{
+		int idHexagone = matrix[coord.second][coord.first];
+		if (idHexagone != -1 && idHexagone != idCell) {
+			bool alreadyNeighbouring = false;
+			int idVoisin;
+			
+			for (int i = 0; i < scell.nbNeighbors; i++)
+			{
+				idVoisin = scell.neighbors[i]->infos.id;
+				if (idHexagone == idVoisin) {
+					alreadyNeighbouring = true;
+				}
+			}
 
-			if (matrix[x][y] == -1) {
-				check1 = true;
-				matrix[x][y] = i;
-				map[i].insert(std::make_pair(x, y));
+			for (int id : newNeighIDList) {
+				if (id == idHexagone)
+					alreadyNeighbouring = true;
+			}
+
+			if (!alreadyNeighbouring) {
+				
+				newNeighIDList.push_back(idHexagone);
 			}
 		}
-
-		// Changer valeur dans la Matrix
-		//while (!check1) {
-		//	if (matrix[y][x] == -1) {
-		//		check1 = true;
-		//		matrix[y][x] = i;
-		//	}
-		//}
-
-		// Insérer les coordonnées dans la map à la clé "n° de territoire"
-
 	}
 
-	afficherMap(map);
+	if (newNeighIDList.size() > 0) {
+		if (scell.nbNeighbors <= 0) {
+			// Modif nbNeighbors
+			scell.nbNeighbors = newNeighIDList.size();
 
+			// Première allocation mémoire de scell.neighbors
+			scell.neighbors = new SCell*[scell.nbNeighbors];
 
+			// Ajout nouveaux voisins
+			int j = 0;
+			for (int id : newNeighIDList) {
+				scell.neighbors[j] = &(smap->cells[id]);
+				j++;
 
-	bool end;
-	do {
+				// Ajout voisin dans la cellule nouvellement voisine
+				if (smap->cells[id].nbNeighbors <= 0) {
+					// Modif nbNeighbors
+					smap->cells[id].nbNeighbors = 1;
 
-		end = false;
-		for (int k = 0; k < n; k++) {
-			//Vérifier si le territoire n'est pas tout recouvert
+					// Première allocation mémoire de scell.neighbors
+					smap->cells[id].neighbors = new SCell*[smap->cells[id].nbNeighbors];
 
-			std::set<Coordinates> territory_cells = map.find(k)->second;
-			std::cout << "bool already expand = " << already_expanded(map, matrix, k, L, C) << std::endl;
-			if (!already_expanded(map, matrix, k, L, C)) {
-				std::set<Coordinates> list_base;
-				std::set<Coordinates> list;
-				for (Coordinates coord : territory_cells) {
-					if (coord.second % 2 == 0) {
-						list = even_coordinates(coord, L, C, matrix);
+					// Ajout nouveaux voisins
+					smap->cells[id].neighbors[0] = &(scell);
+				}
+				else {
+					// Equivalent realloc car scell.neighbors existe déjà en mémoire
+					SCell** listPtrVoisins = new SCell*[1 + smap->cells[id].nbNeighbors];
+					for (int i = 0; i < smap->cells[id].nbNeighbors; i++) {
+						listPtrVoisins[i] = smap->cells[id].neighbors[i];
 					}
-					else {
-						list = odd_coordinates(coord, L, C, matrix);
+					delete[] smap->cells[id].neighbors;
+					smap->cells[id].neighbors = new SCell*[1 + smap->cells[id].nbNeighbors];
+					for (int i = 0; i < smap->cells[id].nbNeighbors; i++) {
+						smap->cells[id].neighbors[i] = listPtrVoisins[i];
 					}
-					list_base.insert(list.begin(), list.end());
+					delete[] listPtrVoisins;
+
+					// Ajout nouveaux voisins
+					smap->cells[id].neighbors[smap->cells[id].nbNeighbors] = &(scell);
+
+					// Modif nbNeighbors
+					smap->cells[id].nbNeighbors += 1;
 				}
-
-				std::cout << "vide la liste_base ? " << list_base.empty() << std::endl;
-				std::cout << "Coordonnees list_base : ";
-				for (Coordinates coordin : list_base) {
-					std::cout << "(" << coordin.first << ", " << coordin.second << ")";
-				}
-				std::cout << std::endl;
-
-				//int size_territory = map.find(k)->second.size();
-				if (!list_base.empty()) {
-					int size_list_base = list_base.size();
-					int id_cell_rd = rand() % (size_list_base - 0) + 0;
-					std::cout << std::endl;
-					std::cout << "size_territory/id_cell_rd : " << size_list_base << " " << id_cell_rd << std::endl;
-					std::cout << std::endl;
-
-					std::set<Coordinates>::iterator it = list_base.begin();
-					std::cout << "-" << std::endl;
-					advance(it, id_cell_rd);
-					std::cout << "-" << std::endl;
-					Coordinates coord_a = *it;
-					std::cout << "-" << std::endl;
-					std::cout << "coord_a --> " << coord_a.first << ", " << coord_a.second << std::endl;
-					std::cout << "-" << std::endl;
-
-					matrix[coord_a.first][coord_a.second] = k;
-					map[k].insert(std::make_pair(coord_a.first, coord_a.second));
-				}
-
-
-
-				/*set<Coordinates>::iterator coord_a = next(list_base.begin(), 5);
-				std::cout << "coord_a --> " << coord_a.first << ", " << coord_a.second << std::endl;*/
-
-
 
 			}
-			else {
-				std::cout << std::endl;
-				std::cout << "------------ C'EST LA FIN ------------" << std::endl;
-				std::cout << std::endl;
-				end = false;
-			}
-			// pour chaque id_territoire :
-				// obtenir la liste valeur de la map -- set<Coordinates>
-				// créer liste de Corrdinates avec possibilité de mvt
-				// pour chaque <Coordinates> :
-					// ajouter la Coordinates à la set<Coordinates>
-
-			// si new Liste set<Coordinates> n'est pas vide
-				// on choisit une corrdinate
-				// et on expand
-
-			//int size_territory = map.find(k)->second.size();
-
-
-	/*		std::cout << " ID_TERRITORY = " << k << std::endl;
-			std::cout << " ---------------- " << std::endl;
-			int id_cell_rd = rand() % (size_territory - 0) + 0;*/
-
-			//	std::cout << "id_cell_rd = " << id_cell_rd << std::endl;
-			//	
-
-		/*	set<Coordinates>::iterator it = territory_cells.begin();
-			advance(it, id_cell_rd);
-			Coordinates coord_a = *it;
-			std::cout << "coord_a --> " << coord_a.first << ", " << coord_a.second << std::endl;*/
-
-
-			bool check = false;
-			//Coordinates coord_b = make_pair(9,4);
-			//matrix()
-			//std::cout << isIsolated(matrix, coord_a, L, C) << std::endl;
-
-
-			std::cout << std::endl;
-			std::cout << std::endl;
-
-
-			// si on peut encore trouver des voisins possibles.
-			//if (!already_expanded(map,matrix,k,L,C)) {
-			//	while (!check) {
-			//		std::cout << "Entrée dans la boucle" << std::endl;
-			//		std::cout << "!isIsolated -->" << (!isIsolated(matrix, coord_a, L, C))  << std::endl;
-			//		if (!isIsolated(matrix, coord_a, L, C)) {
-			//			Coordinates c = pattern_treatment(coord_a, L, C, matrix);
-			//			std::cout << "coord_c --> " << c.first << ", " << c.second << std::endl;
-			//			check = true;
-			//			coord_a = make_pair(c.first, c.second);
-			//		}
-			//	}
-
-			//	matrix[coord_a.first][coord_a.second] = k;
-			//	map[k].insert(make_pair(coord_a.first, coord_a.second));
-			//}
-
-
-
-			//for (Coordinates coord : map.find(k)->second) {
-			//	set<Coordinates> list;
-			//	if (coord.first % 2 == 0) {
-			//		list = even_coordinates(coord, L, C);
-			//	}
-			//	else {
-			//		list = odd_coordinates(coord, L, C);
-			//	}
-
-			//	if (list.empty()) {
-			//		end = false;
-			//	}
-
-			//	//	std::cout << std::endl;
-
-
-			//	//	//std::cout << "(" << coord_a.first << ":" << coord_a.second << ")" << std::endl;
-			//	//	//
-			//}
-
-
-
-			afficherMap(map);
-
-			displayMatrix(L, C, matrix);
 		}
-		end = CheckEndInit(matrix, map, L, C);
+		else {
 
-		afficherMap(map);
+			// Equivalent realloc car scell.neighbors existe déjà en mémoire
+			SCell** listPtrVoisins = new SCell*[newNeighIDList.size() + scell.nbNeighbors];
+			for (int i = 0; i < scell.nbNeighbors; i++) {
+				listPtrVoisins[i] = scell.neighbors[i];
+			}
+			delete[] scell.neighbors;
+			scell.neighbors = new SCell*[newNeighIDList.size() + scell.nbNeighbors];
+			for (int i = 0; i < scell.nbNeighbors; i++) {
+				scell.neighbors[i] = listPtrVoisins[i];
+			}
+			delete[] listPtrVoisins;
 
-		displayMatrix(L, C, matrix);
+			// Ajout nouveaux voisins
+			int j = 0;
+			for (int id : newNeighIDList) {
+				scell.neighbors[j + scell.nbNeighbors] = &(smap->cells[id]);
+				j++;
 
-		std::cout << end << std::endl;
-	} while (!end);
+				// Ajout voisin dans la cellule nouvellement voisine
+				if (smap->cells[id].nbNeighbors <= 0) {
+					// Modif nbNeighbors
+					smap->cells[id].nbNeighbors = 1;
 
+					// Première allocation mémoire de scell.neighbors
+					smap->cells[id].neighbors = new SCell*[smap->cells[id].nbNeighbors];
+
+					// Ajout nouveaux voisins
+					smap->cells[id].neighbors[0] = &(scell);
+				}
+				else {
+					// Equivalent realloc car scell.neighbors existe déjà en mémoire
+					SCell** listPtrVoisins = new SCell*[1 + smap->cells[id].nbNeighbors];
+					for (int i = 0; i < smap->cells[id].nbNeighbors; i++) {
+						listPtrVoisins[i] = smap->cells[id].neighbors[i];
+					}
+					delete[] smap->cells[id].neighbors;
+					smap->cells[id].neighbors = new SCell*[1 + smap->cells[id].nbNeighbors];
+					for (int i = 0; i < smap->cells[id].nbNeighbors; i++) {
+						smap->cells[id].neighbors[i] = listPtrVoisins[i];
+					}
+					delete[] listPtrVoisins;
+
+					// Ajout nouveaux voisins
+					smap->cells[id].neighbors[smap->cells[id].nbNeighbors] = &(scell);
+
+					// Modif nbNeighbors
+					smap->cells[id].nbNeighbors += 1;
+				}
+			}
+
+			// Modif nbNeighbors
+			scell.nbNeighbors += newNeighIDList.size();
+		}
+	}
 }

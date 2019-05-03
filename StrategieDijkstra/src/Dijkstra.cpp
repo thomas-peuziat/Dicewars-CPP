@@ -1,7 +1,7 @@
 #include "Dijkstra.h"
 
 
-//idCellDepart => id de la cellue pour laquelle on cherche le plus court chemin
+//idCellDepart => id de la cellule pour laquelle on cherche le plus court chemin
 //tableau des predecesseurs la valeur correspond à l'id de la cellule précédente
 int initDijkstra(const SMap *map, const int nbCells, int idCellDepart, int idCellArrivee, std::vector<int>& predecesseurs) {
 
@@ -23,17 +23,6 @@ int initDijkstra(const SMap *map, const int nbCells, int idCellDepart, int idCel
 	//itérations
 	iterationDijkstra(map, nbCells, distance, predecesseurs, idCellDepart, sommetDijkstra);
 		
-	//a enlever - simplement pour vérifier l'initialisation - toutes les données doivent être initialisées
-	//int currentSommet = 0;
-	//std::cout << "tableau distance : " << std::endl;
-	//for (std::vector<int>::iterator it = distance.begin(); it < distance.end(); it++) {
-	//	std::cout << "sommet  : " << currentSommet << " a une distance du sommet "<<idCellDepart<<" de : " << *it << std::endl;
-	//	currentSommet++;
-	//}
-	
-		
-	//pour afficher le parcours inverse à suivre
-	//Affiche_Parcours_Min(distance, predecesseurs, idCellDepart, idCellArrivee, map);
 	return distance[idCellArrivee];
 }
 
@@ -48,15 +37,12 @@ void iterationDijkstra(const SMap* map, int nbCells, std::vector<int> &distance,
 	int currentVoisin = -1;
 	int currentCell = idCellDepart;
 
-	int nbMaxVoisin = -1;
-	
-
 	while (nbTraites != nbCells) {
 		
 
 		tabVoisinsCell.push_back(map->cells[currentCell].neighbors);	// tableau des voisins d'une cellule
 
-
+		
 		
 		//pour parcourir la liste des voisins d'une cellule
 		int i = 0;
@@ -133,6 +119,7 @@ void Affiche_Parcours_Min(std::vector<int> &distance, std::vector<int> &predeces
 			std::cout << "distance totale par rapport au depart -> " << tmp << std::endl;
 			currentCell = predecesseurs[currentCell]; //la cellule courante prend la valeur de son précédent
 			std::cout << " distance entre sommet actuel et sommet suivant "<< tmp - distance[currentCell] << std::endl; //distance entre 2 sommets
+			
 		}
 	}
 }
