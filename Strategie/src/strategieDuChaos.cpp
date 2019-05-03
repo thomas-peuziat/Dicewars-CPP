@@ -46,7 +46,7 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 	{
 		int cellFrom = -1;
 		int cellTo = -1;
-		std::vector<int> tab_own(6);
+		std::vector<int> tab_own(state->nbCells);
 		int idx_own = 0;
 		int idx_adj = 0;
 
@@ -90,6 +90,8 @@ API_EXPORT void EndGame(void *ctx, unsigned int idWinner)
 	SContext* contexte = static_cast<SContext*>(ctx);
 	if (idWinner == contexte->id)
 		std::cout << "J'ai gagné !" << std::endl;
+	else
+		std::cout << "J'ai perdu ! " << std::endl;
 
 	delete ctx;
 

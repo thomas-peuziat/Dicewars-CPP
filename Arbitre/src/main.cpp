@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 	std::vector<SPlayerInfo> player(nbPlayers);
 	STurn turn;
 	std::vector<void *> ctx(nbPlayers);
-	MapTerritoire maMap = InitMap(&map, 25, 30, 30, nbPlayers);
+	MapTerritoire maMap = InitMap(&map, 50, 30, 30, nbPlayers);
 	InitGameState(&map, &state, nbPlayers);
 
 	void *ctxGUI;

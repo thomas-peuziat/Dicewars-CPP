@@ -138,7 +138,9 @@ API_EXPORT void EndGame(void *ctx, unsigned int idWinner)
 {
 	SContext* contexte = static_cast<SContext*>(ctx);
 	if (idWinner == contexte->id)
-		std::cout << "J'ai gagné !" << std::endl;
+		std::cout << "J'ai gagne !" << std::endl;
+	else
+		std::cout << "J'ai perdu !" << std::endl;
 
 	delete ctx;
 }

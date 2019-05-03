@@ -301,5 +301,11 @@ API_EXPORT int PlayTurn(unsigned int gameTurn, void *ctx, const SGameState *stat
 
 API_EXPORT void EndGame(void *ctx, unsigned int idWinner)
 {
-	std::cout << "EndGame" << std::endl;
+	SContext* contexte = static_cast<SContext*>(ctx);
+	if (idWinner == contexte->id)
+		std::cout << "J'ai gagne !" << std::endl;
+	else
+		std::cout << "J'ai perdu !" << std::endl;
+
+	delete ctx;
 }
